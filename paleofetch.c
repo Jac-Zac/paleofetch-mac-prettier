@@ -8,14 +8,14 @@
 #include <errno.h>
 
 #include <sys/utsname.h>
-#include <sys/sysinfo.h>
-#include <sys/statvfs.h>
+#ifdef __linux__
+        #include <sys/sysinfo.h>
+        #include <sys/statvfs.h>
+        #include <pci/pci.h>
 
-#include <pci/pci.h>
-
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-
+        #include <X11/Xlib.h>
+        #include <X11/Xatom.h>
+#endif
 #include "paleofetch.h"
 #include "config.h"
 
