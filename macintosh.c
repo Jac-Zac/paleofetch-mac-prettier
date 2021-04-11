@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
@@ -11,24 +12,20 @@
 
 #define ESC 27
 #define BUFFER32 32
+#define BUFFER64 64
 #define BUFFER256 256
 #define CPU "machdep.cpu.brand_string"
 #define LOGICAL_CPU hw.logicalcpu
 #define PCHYSICAL_CPU hw.pchysicalcpu
-#define MEM_SIZE hw.memsize
 #define SWAP_USG vm.swapusage
 #define BOOT_TIME kern.boottime
 #define MODEL "hw.model"
 
 #if defined(__MACH__) || defined(__APPLE__) 
 #endif
-static void turn_bold_on()
+static void print_bold_string(const char *input)
 {
-        printf("%c[1m", ESC);
-}
-static void turn_bold_off()
-{
-        printf("%c[0m", ESC);
+       printf("%c[1m%s%c[0m", ESC, input, ESC); 
 }
 static char *get_colors1() {
     char *colors1 = malloc(BUFFER256);
@@ -56,13 +53,14 @@ static char *get_colors2() {
 }
 static char* concat(const char *s1, const char *s2)
 {
-    char *result = malloc(strlen(s1) + strlen(s2) + 1); // +1 for the null-terminator
+    size_t string_size = strlen(s1) + strlen(s2) + 1;
+    char *result = malloc(string_size); // +1 for the null-terminator
     // in real code you would check for errors in malloc here
-    strcpy(result, s1);
-    strcat(result, s2);
+    strlcpy(result, s1, string_size);
+    strlcat(result, s2, string_size);
     return result;
 }
-static char *exec_system_profiler(char *cmd)
+static char *exec_system_profiler(const char *cmd)
 {
         FILE *stdout_file = popen(cmd, "r");
         char *file_ret = malloc(BUFFER256);
@@ -143,10 +141,10 @@ static char *get_os_name(const char *cmd)
         return os_name;
 
 }
-static char *get_sysctl_info(char *input)
+static char *get_sysctl_info_str(const char *input)
 {
-        char *sysctl_info = malloc(BUFFER256);
-        size_t sysctl_info_length = BUFFER256;
+        char *sysctl_info = malloc(BUFFER64);
+        size_t sysctl_info_length = BUFFER64;
         int n = sysctlbyname(input, sysctl_info, &sysctl_info_length, NULL, 0);
         if (n != 0) 
         {
@@ -154,6 +152,40 @@ static char *get_sysctl_info(char *input)
                 return 0;
         }
         return sysctl_info;
+}
+static int64_t get_sysctl_info_int(const char *input)
+{
+        int64_t sysctl_info;  
+        size_t sysctl_info_length = sizeof(sysctl_info);
+        int n = sysctlbyname(input, &sysctl_info, &sysctl_info_length, NULL, 0);
+        if (n != 0) 
+        {
+                perror("sysctlbyname");
+                return 0;
+        }
+        return sysctl_info;
+}
+static int get_mem_from_vm_stat(const char *cmd)
+{
+        FILE *stdout_file = popen(cmd, "r");
+        char *memory = malloc(BUFFER256);
+        if (stdout_file)
+        {
+                fgets(memory, BUFFER256, stdout_file);
+                pclose(stdout_file);
+        }
+        int j = 0;
+        char *ret_memory = malloc(BUFFER64);
+        for(int i = 0; i < strlen(memory); i++)
+        {
+                if(memory[i] >= 48 && memory[i] <= 57)
+                {
+                        ret_memory[j] = memory[i];        
+                        j++;
+                }
+        }
+        int ret_memory_int = atoi(ret_memory);
+        return ret_memory_int;
 }
 static char *get_shell()
 {
@@ -172,30 +204,50 @@ static char *get_shell()
 static void print_underline(const char *userhost)
 {       
         size_t underline = strlen(userhost);
-        turn_bold_on();
+        printf("%c[1m", ESC);
         for(int i = 0; i < underline; i++)
         {
-                printf("%c", '-');
+                putchar('-');
         }
-        turn_bold_off();
+        printf("%c[0m", ESC);
 }
-int main()
+static long get_ram_size()
+{
+        long ram_size = get_sysctl_info_int("hw.memsize");
+        short ram_size_short = ram_size / (1024*1024);
+        return ram_size_short;
+}
+static short count_used_memory()
+{
+        int get_memory_active = get_mem_from_vm_stat("vm_stat | grep 'active'|grep -v 'inactive'");
+        int get_memory_wired =  get_mem_from_vm_stat("vm_stat | grep 'wired'");
+        int get_memory_occupied = get_mem_from_vm_stat("vm_stat | grep 'occupied'");
+        short used_memory = (get_memory_active + get_memory_wired + get_memory_occupied) * 4 / 1024;
+        return used_memory;
+}
+static char *look_for_package_manager()
+{
+
+}
+int main(int argc, char *argv[])
 {
         struct utsname details;
         int ret = uname(&details);
         char *userhost = malloc(BUFFER256);
-        strcpy(userhost, getenv("USER"));
-        strcat(userhost, "@");
-        strcat(userhost, details.nodename);
+        strlcpy(userhost, getenv("USER"),BUFFER256);
+        strlcat(userhost, "@", BUFFER256);
+        strlcat(userhost, details.nodename, BUFFER256);
         char *shell = get_shell();
-        char *os_version = get_sysctl_info("kern.osproductversion");
-        char *pc_name = get_sysctl_info("hw.model");
+        char *os_version = get_sysctl_info_str("kern.osproductversion");
+        char *pc_name = get_sysctl_info_str("hw.model");
         char *cmd_build = "sw_vers -buildVersion";
         char *cmd_name ="sw_vers -productName";
-        char *cpu_string = get_sysctl_info("machdep.cpu.brand_string");
+        char *cpu_string = get_sysctl_info_str("machdep.cpu.brand_string");
         char *os_name = get_os_name(cmd_name);
+        short ram = get_ram_size();
         char *os_build = get_os_name(cmd_build);
         char *resolution = get_resolution_and_gpu();
+        short used_memory = count_used_memory();
         if (ret==0)
         {
                 printf("%s\n", userhost);
@@ -205,6 +257,7 @@ int main()
                 printf("Kernel: %s %s\n", details.sysname, details.release);
                 printf("Host: %s\n", pc_name);
                 printf("CPU: %s\n", cpu_string);
+                printf("Memory: %dMB / %hdMB\n", used_memory, ram);
                 printf("Terminal: %s\n", getenv("TERM_PROGRAM"));
                 printf("Resolution: %s\n", resolution);
         }
