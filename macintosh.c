@@ -8,17 +8,17 @@
 #include <sys/sysctl.h>
 #include <sys/utsname.h>
 
-#include "logos/darwin.h"
 
 #define ESC 27
 #define BUFFER32 32
 #define BUFFER64 64
 #define BUFFER256 256
 #define CPU "machdep.cpu.brand_string"
-#define LOGICAL_CPU hw.logicalcpu
-#define PCHYSICAL_CPU hw.pchysicalcpu
-#define SWAP_USG vm.swapusage
-#define BOOT_TIME kern.boottime
+#define MEM_SIZE "hw.memsize" 
+//#define LOGICAL_CPU hw.logicalcpu
+//#define PCHYSICAL_CPU hw.pchysicalcpu
+//#define SWAP_USG vm.swapusage
+//#define BOOT_TIME kern.boottime
 #define MODEL "hw.model"
 
 #if defined(__MACH__) || defined(__APPLE__) 
@@ -35,7 +35,7 @@ static char *get_colors1() {
         sprintf(s, "\e[4%dm   ", i);
         s += 8;
     }
-    snprintf(s, 5, "\e[0m");
+    strlcat(s, "\e[0m", 5);
 
     return colors1;
 }
@@ -47,7 +47,7 @@ static char *get_colors2() {
         sprintf(s, "\e[48;5;%dm   ", i);
         s += 12 + (i >= 10 ? 1 : 0);
     }
-    snprintf(s, 5, "\e[0m");
+    strlcat(s, "\e[0m", 5);
 
     return colors2;
 }
@@ -89,41 +89,6 @@ static char *get_resolution_and_gpu()
         resolution[k]='\0';
         return resolution;
 }
-/*static char *remove_double_spaces(char *input)
-{
-       * i    j   
-         *[  ][  ][r][i][n][g]
-         *
-         *
-        char * ret_string = malloc(BUFFER256);
-        int i = 0;
-        int j = 1;
-        int k = 0;
-        bool isEmpty = true;
-        while(input[j])
-        {
-               if(input[i] == ' ' && input[j] == ' ')
-               {
-                        if(isEmpty)
-                        {
-                                i+=2;
-                                j+=2;
-                        }
-                        else
-                        {
-                                ret_string[k];
-                                k++;
-                        }
-               }
-               else
-               {
-                       isEmpty = false;
-                       ret_string[k] = input[i];
-                       k++;
-               }
-        }
-        return ret_string;
-}*/
 static char *get_os_name(const char *cmd) 
 {
         FILE *stdout_file = popen(cmd, "r");
@@ -213,7 +178,7 @@ static void print_underline(const char *userhost)
 }
 static long get_ram_size()
 {
-        long ram_size = get_sysctl_info_int("hw.memsize");
+        long ram_size = get_sysctl_info_int(MEM_SIZE);
         short ram_size_short = ram_size / (1024*1024);
         return ram_size_short;
 }
@@ -221,14 +186,29 @@ static short count_used_memory()
 {
         int get_memory_active = get_mem_from_vm_stat("vm_stat | grep 'active'|grep -v 'inactive'");
         int get_memory_wired =  get_mem_from_vm_stat("vm_stat | grep 'wired'");
-        int get_memory_occupied = get_mem_from_vm_stat("vm_stat | grep 'occupied'");
-        short used_memory = (get_memory_active + get_memory_wired + get_memory_occupied) * 4 / 1024;
+        int get_memory_free = get_mem_from_vm_stat("vm_stat | grep 'free'");
+        int get_memory_speculative = get_mem_from_vm_stat("vm_stat | grep 'speculative'");
+        short used_memory = ((get_memory_active + get_memory_wired + get_memory_free + get_memory_speculative) * 4 / 1024);
         return used_memory;
+}
+/*static char *check_for_pkg_info()
+{
+        if(system("which pkg_info > /dev/null 2>&1"))
+        {
+                char *cmd = "pkg_info | wc -l";
+                FILE *stdout_file = popen(cmd, "r");
+                char *ret_str = malloc(BUFFER32);
+                if (stdout_file)
+                {
+                        fgets(ret_str, BUFFER32, stdout_file);
+                        pclose(stdout_file);
+                }
+        }
 }
 static char *look_for_package_manager()
 {
-
-}
+        
+}*/
 int main(int argc, char *argv[])
 {
         struct utsname details;
@@ -239,15 +219,17 @@ int main(int argc, char *argv[])
         strlcat(userhost, details.nodename, BUFFER256);
         char *shell = get_shell();
         char *os_version = get_sysctl_info_str("kern.osproductversion");
-        char *pc_name = get_sysctl_info_str("hw.model");
+        char *pc_name = get_sysctl_info_str(MODEL);
         char *cmd_build = "sw_vers -buildVersion";
         char *cmd_name ="sw_vers -productName";
-        char *cpu_string = get_sysctl_info_str("machdep.cpu.brand_string");
+        char *cpu_string = get_sysctl_info_str(CPU);
         char *os_name = get_os_name(cmd_name);
         short ram = get_ram_size();
         char *os_build = get_os_name(cmd_build);
         char *resolution = get_resolution_and_gpu();
         short used_memory = count_used_memory();
+        char *colors1 = get_colors1();
+        char *colors2 = get_colors2();
         if (ret==0)
         {
                 printf("%s\n", userhost);
@@ -257,9 +239,11 @@ int main(int argc, char *argv[])
                 printf("Kernel: %s %s\n", details.sysname, details.release);
                 printf("Host: %s\n", pc_name);
                 printf("CPU: %s\n", cpu_string);
-                printf("Memory: %dMB / %hdMB\n", used_memory, ram);
+                printf("Memory: %hdMB / %hdMB \(%d%c%c\n", used_memory, ram, (used_memory *100 /ram), 37, 41);
                 printf("Terminal: %s\n", getenv("TERM_PROGRAM"));
-                printf("Resolution: %s\n", resolution);
+                printf("Resolution: %s\n\n", resolution);
+                printf("%s\n", colors1);
+                printf("%s\n", colors2);
         }
         return ret;
 }
