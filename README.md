@@ -1,17 +1,23 @@
-paleofetch-mac
-==========
+paleofetch-bsd
+==============
 
-A rewrite of [neofetch](https://github.com/dylanaraps/neofetch) in C.
+A rewrite of [neofetch](https://github.com/dylanaraps/neofetch) in C started by [ss7m for linux](https://github.com/ss7m/paleofetch).
+
+Not much code was left, but name is beautiful.
+
 Currently showing only some info without logo.
 
-
 Why use paleofetch over neofetch?
------------------------------------------
-One major reason is the performance improvement. For example: neofetch finishes running after about 2.2 seconds on my Mac where as paleofetch can finish running in a blazing fast 3 milliseconds(probably) with caching and .5s with no caching(due to slow acces to system_profiler which takes around 0.4s).
+---------------------------------
+One major reason is the performance possible improvement.
 
-Note: this testing occured on only 1 computer, it's not a good representation on the performance benefit you may gain.
+I used word possible as some commands like `system_profiler` are executed as console command, and then grepped which is really slow(.4s), and i will try to change that.
 
-Note2: This is my first c program. I could make a lot of mistakes.
+The plan is to support all BSDs(FreeBSD, NetBSD, OpenBSD, maybe Dragonfly) and macOS.
+
+Also i would like to print logos in 256 colors instead of 16. That's why:
+
+![256 colors vs 16](logos.png)
 
 Example output:
 
@@ -19,8 +25,7 @@ Example output:
 
 Dependencies
 ------------
-Having a Mac.
-
+Having a Mac, or one of the BSDs, you could be very helpful.
 
 Compiling
 ---------

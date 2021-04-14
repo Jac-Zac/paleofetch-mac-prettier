@@ -4,24 +4,24 @@ int main()
 {
         char *logo[] =
         {
-        "                    'c.        ",
+        "\e[38;5;76;1m                    'c.        ",
         "                 ,xNMM.        ",
         "               .OMMMMo         ",
         "               OMMM0,          ",
         "     .;loddo:' loolloddol;.    ",
         "   cKMMMMMMMMMMNWMMMMMMMMMM0:  ",
-        " .KMMMMMMMMMMMMMMMMMMMMMMMWd.  ",
+        " \e[38;5;184m.KMMMMMMMMMMMMMMMMMMMMMMMWd.  ",
         " XMMMMMMMMMMMMMMMMMMMMMMMX.    ",
-        ";MMMMMMMMMMMMMMMMMMMMMMMM:     ",
+        "\e[38;5;208m;MMMMMMMMMMMMMMMMMMMMMMMM:     ",
         ":MMMMMMMMMMMMMMMMMMMMMMMM:     ",
-        ".MMMMMMMMMMMMMMMMMMMMMMMMX.    ",
+        "\e[38;5;196m.MMMMMMMMMMMMMMMMMMMMMMMMX.    ",
         " kMMMMMMMMMMMMMMMMMMMMMMMMWd.  ",
-        " .XMMMMMMMMMMMMMMMMMMMMMMMMMMk ",
+        " \e[38;5;129m.XMMMMMMMMMMMMMMMMMMMMMMMMMMk ",
         "  .XMMMMMMMMMMMMMMMMMMMMMMMMK. ",
-        "    kMMMMMMMMMMMMMMMMMMMMMMd   ",
+        "    \e[38;5;39mkMMMMMMMMMMMMMMMMMMMMMMd   ",
         "     ;KMMMMMMMWXXWMMMMMMMk.    ",
         "       .cooc,.    .,coo:.      ",
-        "                               "
+        "\e[0m                               "
         };
         for(int i = 0; i < 18; i++)
         {
