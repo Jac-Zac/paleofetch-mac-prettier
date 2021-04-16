@@ -1,3 +1,7 @@
+v0.1c - 2021-04-17
+------------------
+* Fixed reading memory, finally logo is printed.
+
 v0.1b - 2021-04-14
 ------------------
 * Implemented faster getting stats from vm.

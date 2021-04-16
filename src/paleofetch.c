@@ -4,12 +4,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #include <sys/sysctl.h>
 #include <sys/utsname.h>
 
+#include "paleofetch.h"
+
 #if defined(__MACH__) || defined(__APPLE__) 
-        #include "macintosh.h"
+        #include "macintosh.c"
+        #define DE "\e[1mDE:\e[0m Aqua"
+        #define OS_VERS "kern.osproductversion"
 #endif
 
 #define ESC 27
@@ -20,14 +25,26 @@
 #define MEM_SIZE "hw.memsize" 
 #define HOSTNAME "kern.hostname"
 #define PAGES "vm.pages"
-#define OS_VERS "kern.osproductversion"
 //#define LOGICAL_CPU hw.logicalcpu
-//#define PCHYSICAL_CPU hw.pchysicalcpu
-//#define SWAP_USG vm.swapusage
-//#define BOOT_TIME kern.boottime
 #define MODEL "hw.model"
+#define COUNT(x) (int)(sizeof x / sizeof *x)
 
-//First two functions from original paleofetch.
+#define halt_and_catch_fire(fmt, status) \
+	do { \
+        	if(status != 0) { \
+            		fprintf(stderr, "paleofetch: " fmt "\n"); \
+            		exit(status); \
+        	} \
+	} while(0)
+
+/*static char *bold_and_color_string_constructor(const char *input, short color)
+{
+        char *ret_sring = malloc(BUFFER64);
+        char *color = malloc(BUFFER32);
+        snprintf(color, BUFFER32, "%s%hd%s", "\e[38;5;", color, ";1m");
+        char *reset = "\e[0m";
+        snprintf(ret_string, BUFFER64, "%s%s%s", color, input, reset);
+}*/
 static char *get_colors1()
 {
         char *colors1 = malloc(BUFFER256);
@@ -35,11 +52,11 @@ static char *get_colors1()
 
         for(int i = 0; i < 8; i++) 
         {
-                //why 3 spaces here v ?
+                //why 3 spaces here?
                 snprintf(s, 256, "\e[4%dm   ", i);
                 s += 8;
         }
-        strlcat(s, "\e[0m", 5);
+        strlcat(s, "\e[0m", BUFFER256);
 
         return colors1;
 }
@@ -65,16 +82,19 @@ static char* concat(const char *s1, const char *s2)
         strlcat(result, s2, string_size);
         return result;
 }
-static char *exec_system_profiler(const char *cmd)
+static char *get_sysctlbyname_info_str(const char *input)
 {
-        FILE *stdout_file = popen(cmd, "r");
-        char *file_ret = malloc(BUFFER256);
-        if(stdout_file)
+        char *sysctl_info;
+        size_t sysctl_info_length;
+        sysctlbyname(input, NULL, &sysctl_info_length, NULL, 0);
+        sysctl_info = malloc(sysctl_info_length);
+        int n = sysctlbyname(input, sysctl_info, &sysctl_info_length, NULL, 0);
+        if (n != 0) 
         {
-                fgets(file_ret, BUFFER256, stdout_file);
-                pclose(stdout_file);
+                halt_and_catch_fire("sysctlbyname error", 127);
+                return 0;
         }
-        return file_ret;
+        return sysctl_info;
 }
 static char *get_resolution_and_gpu()
 {
@@ -124,7 +144,7 @@ static char *get_sysctl_info_str(const int input1, const int input2)
         int n = sysctl(mib, 2, sysctl_info, &sysctl_info_lenght, NULL, 0);
         if (n != 0) 
         {
-                perror("sysctl error");
+                halt_and_catch_fire("sysctl error", 127);
                 return 0;
         }
         return sysctl_info;
@@ -139,24 +159,25 @@ static int64_t get_sysctl_info_int(const int input1, const int input2)
         int n = sysctl(mib, 2, &sysctl_info, &sysctl_info_length, NULL, 0);
         if (n != 0) 
         {
-                perror("sysctl error");
+                halt_and_catch_fire("sysctl error", 127);
                 return 0;
         }
         return sysctl_info;
 }
+//This code is from stackoverflow, no idea what it is apart it gets memory pages from somewhere.
 static int get_mem_from_vm_stat()
 {
-        int pagesize = get_sysctl_info_int(CTL_HW, HW_PAGESIZE);
+        int pagesize = get_sysctl_info_int(CTL_HW, HW_PAGESIZE) / 1024;
 
         mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
 
-        vm_statistics_data_t vmstat;
+        vm_statistics64_data_t vmstat;
         if (host_statistics (mach_host_self(), HOST_VM_INFO, (host_info_t) &vmstat, &count) != KERN_SUCCESS)
         {
-                fprintf (stderr, "Failed to get VM statistics.");
+                halt_and_catch_fire("Failed to get VM statistics.", 127);
         }
 
-        int total = (vmstat.wire_count + vmstat.active_count + vmstat.inactive_count + vmstat.free_count) * pagesize / (1024 * 1024);
+        unsigned int total = (vmstat.compressor_page_count + vmstat.wire_count + vmstat.active_count + vmstat.free_count + vmstat.speculative_count) * 4 / (1024);
         return total;
 }
 static char *get_shell()
@@ -171,35 +192,42 @@ static char *get_shell()
         }
         return shell;
 }
-static void print_underline(const char *input)
+static char *hostname_underline(const char *input)
 {       
         /*Composing username@hostname second time, 
         * to properly calculate string lenght without ESC chars etc*/
+	
         char *userhost = malloc(BUFFER256);
         size_t string_size = BUFFER256;
         snprintf(userhost, string_size, "%s%c%s", getenv("USER"), '@', input);
         size_t underline = strlen(userhost);
-        printf("%c[1m", ESC);
-        for(int i = 0; i < underline; i++)
+	char *ret_string = malloc(underline * sizeof(char));
+	int i = 0;
+        for(; i < underline; i++)
         {
-                putchar('-');
+                ret_string[i] = '-';
         }
-        printf("%c[0m", ESC);
+	ret_string[i+1] = '\n';
+	return ret_string;
 }
-static long get_ram_size()
-{
-        long ram_size = get_sysctl_info_int(CTL_HW, HW_MEMSIZE);
-        short ram_size_short = ram_size / (1024*1024);
-        return ram_size_short;
-}
-static short count_used_memory()
+static int count_used_memory()
 {
         int used_memory = get_mem_from_vm_stat();
         return used_memory;
 }
-/*static char *check_for_pkg_info()
+static char *get_ram_usage()
 {
-        if(system("which pkg_info > /dev/null 2>&1"))
+        long ram_size = get_sysctl_info_int(CTL_HW, HW_MEMSIZE);
+        short ram_size_short = ram_size / (1024*1024);
+        int used_memory = count_used_memory();
+        char *ram_usage = malloc(BUFFER64);
+        snprintf(ram_usage, BUFFER64, "%dMB/%dMB %d%c", used_memory, ram_size_short, used_memory * 100/ram_size_short , 37);
+        return ram_usage;
+}
+/*static int check_for_pkg_info()
+{
+        int ret_int = 0;
+        if(access("/opt/pkg/sbin/pkg_info"))
         {
                 char *cmd = "pkg_info | wc -l";
                 FILE *stdout_file = popen(cmd, "r");
@@ -209,57 +237,67 @@ static short count_used_memory()
                         fgets(ret_str, BUFFER32, stdout_file);
                         pclose(stdout_file);
                 }
+                ret_int = atoi(ret_str);
         }
+        else
+        {
+                printf("No pkg_info");
+        }
+        return ret_int;
 }
-static char *look_for_package_manager()
+static char *look_for_package_managers()
 {
-        
-}*/
+        char *packages = malloc(BUFFER256); 
+        int number = check_for_pkg_info();
+        if(number != 0)
+        {
+                snprintf(packages, BUFFER256, "%d", check_for_pkg_info());
+                strlcat(packages, "\40pkg_info\41", BUFFER256);
+        }
+        return packages;
+}
+*/
 static char *get_user_and_host(const char *hostname)
 {
-        char *userhost = malloc(BUFFER256);
-        size_t string_size = BUFFER256;
+        char *userhost = malloc(BUFFER256);;
         
-        snprintf(userhost, string_size, "%s%s%s%s%s", "\e[1m", getenv("USER"), "\e[0m@\e[1m", hostname, "\e[0m");
-        /*strlcpy(userhost, "\e[1m", string_size);
-        strlcat(userhost, getenv("USER"), string_size);
-        strlcat(userhost, "\e[0m@\e[1m", string_size);
-        strlcat(userhost, get_sysctl_info_str(HOSTNAME), string_size);
-        strlcat(userhost, "\e[0m", string_size);*/
+        snprintf(userhost, BUFFER256, "%s%s%s%s%s", "\e[1m", getenv("USER"), "\e[0m@\e[1m", hostname, "\e[0m");
+
         return userhost;
+}
+static char *complete_os()
+{
+        char *cmd_build = "sw_vers -buildVersion";
+        char *cmd_name ="sw_vers -productName";
+        char *os = malloc(BUFFER256);
+        sprintf(os, "%s %s %s", get_os_name(cmd_name), get_sysctlbyname_info_str(OS_VERS),get_os_name(cmd_build));
+        return os;
 }
 int main(int argc, char *argv[])
 {
+	char *table_of_info[BUFFER256];
         struct utsname details;
         int ret = uname(&details);
-        char *userhost = get_user_and_host(details.nodename); 
-        char *shell = get_shell();
-        char *os_version = get_sysctlbyname_info_str(OS_VERS);
-        char *pc_name = get_sysctl_info_str(CTL_HW, HW_MODEL);
-        char *cmd_build = "sw_vers -buildVersion";
-        char *cmd_name ="sw_vers -productName";
-        char *cpu_string = get_sysctlbyname_info_str(CPU);
-        char *os_name = get_os_name(cmd_name);
-        short ram = get_ram_size();
-        char *os_build = get_os_name(cmd_build);
-        char *resolution = get_resolution_and_gpu();
+        table_of_info[0] = get_user_and_host(details.nodename); 
+	table_of_info[1] = hostname_underline(details.nodename);
+        table_of_info[2] = get_shell();
+        table_of_info[3] = complete_os(); 
+        table_of_info[4] = get_sysctl_info_str(CTL_HW, HW_MODEL);
+        table_of_info[5] = get_sysctlbyname_info_str(CPU);
+        table_of_info[7] = get_ram_usage();
+        table_of_info[9] = get_resolution_and_gpu();
         short used_memory = count_used_memory();
-        char *colors1 = get_colors1();
-        char *colors2 = get_colors2();
-        if (ret==0)
-        {
-                printf("%s\n", userhost);
-                print_underline(details.nodename);
-                printf("\nShell: %s\n", shell);
-                printf("System: %s %s %s %s\n", os_name, os_version, os_build, details.machine);
-                printf("Kernel: %s %s\n", details.sysname, details.release);
-                printf("Host: %s\n", pc_name);
-                printf("CPU: %s\n", cpu_string);
-                printf("Memory: %hdMB / %hdMB \(%d%c%c\n", used_memory, ram, (used_memory *100 /ram), 37, 41);
-                printf("Terminal: %s\n", getenv("TERM_PROGRAM"));
-                printf("Resolution: %s\n\n", resolution);
-                printf("%s\n", colors1);
-                printf("%s\n\n", colors2);
-        }
+        table_of_info[10] = get_colors1();
+        table_of_info[11] = get_colors2();
+
+        for(int i = 0; i < COUNT(logo); i++)
+	{
+                printf("%s\e[0m ", logo[i]);
+		if(table_of_info[i] != NULL)
+		{
+			printf("%s" , table_of_info[i]);
+		} 
+		printf("\n");
+	}
         return ret;
 }
