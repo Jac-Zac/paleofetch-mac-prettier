@@ -177,7 +177,8 @@ static int get_mem_from_vm_stat()
                 halt_and_catch_fire("Failed to get VM statistics.", 127);
         }
 
-        unsigned int total = (vmstat.compressor_page_count + vmstat.wire_count + vmstat.active_count + vmstat.free_count + vmstat.speculative_count) * 4 / (1024);
+        unsigned int total = ((vmstat.compressor_page_count + vmstat.wire_count + vmstat.active_count + vmstat.speculative_count) * 4) / (1024);
+        total += vmstat.purgeable_count / (1024 * 1024);
         return total;
 }
 static char *get_shell()

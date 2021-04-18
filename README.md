@@ -13,11 +13,7 @@ One major reason is the performance possible improvement.
 
 I used word possible as some commands like `system_profiler` are executed as console command, and then grepped which is really slow(.4s), and i will try to change that.
 
-The plan is to support all BSDs(FreeBSD, NetBSD, OpenBSD, maybe Dragonfly) and macOS.
-
-Also i would like to print logos in 256 colors instead of 16. That's why:
-
-![256 colors vs 16](logos.png)
+The plan is to support all BSDs(FreeBSD, NetBSD, OpenBSD, maybe Dragonfly), but for now only macOS.
 
 Example output:
 
