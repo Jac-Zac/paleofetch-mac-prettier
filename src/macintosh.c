@@ -4,7 +4,9 @@
 #include <mach/task_info.h>
 #include <mach/task.h>
 #include <IOKit/IOKitLib.h>
+#include <IOKit/graphics/IOGraphicsLib.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <CoreFoundation/CFDictionary.h>
 #include <SystemConfiguration/SystemConfiguration.h>
 
 struct color_numbers darwin_colors = {76,184};
@@ -40,3 +42,4 @@ static char *exec_system_profiler(const char *cmd)
         }
         return file_ret;
 }
+

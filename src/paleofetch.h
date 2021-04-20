@@ -1,7 +1,6 @@
 static char *get_title(),
             *get_bar(),
-            *get_os(),
-            *get_kernel(),
+            *complete_os(),
             *get_host(),
             *get_uptime(),
             *get_battery_percentage(),
@@ -62,6 +61,6 @@ static char *get_title(),
 }
 struct color_numbers
 {
-        int color1;
-        int color2;
+        short color1;
+        short color2;
 };
