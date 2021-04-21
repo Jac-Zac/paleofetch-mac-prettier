@@ -11,11 +11,6 @@
 
 #include "paleofetch.h"
 
-#if defined(__MACH__) || defined(__APPLE__) 
-        #include "macintosh.c"
-        #define OS_VERS "kern.osproductversion"
-        #define KERN_VERS "kern.osrelease"
-#endif
 
 #define ESC 27
 #define BUFFER32 32 * sizeof(char)
@@ -29,6 +24,12 @@
 #define MODEL "hw.model"
 #define COUNT(x) (int)(sizeof x / sizeof *x)
 
+#if defined(__MACH__) || defined(__APPLE__) 
+        #include "macintosh.c"
+        #define OS_VERS "kern.osproductversion"
+        #define KERN_VERS "kern.osrelease"
+        char gpu_name[256];
+#endif
 #define halt_and_catch_fire(fmt, status) \
 	do { \
         	if(status != 0) { \
@@ -36,14 +37,6 @@
             		exit(status); \
         	} \
 	} while(0)
-/*static char *bold_and_color_string_constructor(const char *input, short color)
-{
-        char *ret_sring = malloc(BUFFER64);
-        char *color = malloc(BUFFER32);
-        snprintf(color, BUFFER32, "%s%hd%s", "\e[38;5;", color, ";1m");
-        char *reset = "\e[0m";
-        snprintf(ret_string, BUFFER64, "%s%s%s", color, input, reset);
-}*/
 
 static char *get_colors1()
 {
@@ -96,23 +89,12 @@ static char *get_sysctlbyname_info_str(const char *input)
         }
         return sysctl_info;
 }
-static char *get_resolution_and_gpu()
+static char *get_resolution()
 {
-        // Stupid solution but i didn't found out anything else
-        char *cmd ="system_profiler -json SPDisplaysDataType | awk '/spdisplays_pixelresolution/ || /sppci_model/' | cut -d '\"' -f 4";
-        char *file_ret = exec_system_profiler(cmd);
-        int i = 0;
-        while(file_ret[i] != 'x') i++;
-        int j = i - 4;
-        int k = 0;
-        char *resolution = malloc(BUFFER32);
-        for(;j < i + 5; j++)
-        {
-                if(file_ret[j] == 'x'|| (file_ret[j] >= 48 && file_ret[j] <= 57))
-                        resolution[k]=file_ret[j];
-                k++;
-        }
-        resolution[k]='\0';
+        short screen_width = CGDisplayPixelsWide(CGMainDisplayID());
+        short screen_height = CGDisplayPixelsHigh(CGMainDisplayID());
+        char *resolution = malloc(BUFFER64);
+        snprintf(resolution, BUFFER64, "%hd%c%hd", screen_width, 'x', screen_height);
         return resolution;
 }
 static char *get_os_name(const char *cmd) 
@@ -187,7 +169,8 @@ static int get_mem_from_vm_stat()
         {
                 halt_and_catch_fire("Failed to get VM statistics.", 127);
         }
-
+        //You may have noticed that USED RAM amount is not exactly the same as in activity 
+        //monitor, but i cannot really find a way to make this perfectly right. About +-100MB could be wrong.
         uint64_t total = (vmstat.compressor_page_count + vmstat.wire_count + vmstat.active_count + vmstat.speculative_count) /1024 * 4;
         return total;
 }
@@ -288,6 +271,18 @@ static char *complete_os()
         sprintf(os, "%s %s %s", get_os_name(cmd_name), get_sysctlbyname_info_str(OS_VERS),get_os_name(cmd_build));
         return os;
 }
+/*static void cache info()
+{
+        FILE *cache_file;
+        if(cache_file = fopen("~/.cache/paleofetch", "r")!=NULL)
+        {
+                
+        }
+        else
+        {
+                
+        }
+}*/
 int main(int argc, char *argv[])
 {
 	char *table_of_info[BUFFER256];
@@ -303,9 +298,10 @@ int main(int argc, char *argv[])
         table_of_info[7]        = get_uptime();
         table_of_info[8]        = get_ram_usage();
         table_of_info[9]        = getenv("TERM_PROGRAM");
-        table_of_info[10]        = get_resolution_and_gpu();
+        table_of_info[10]       = get_resolution();
         table_of_info[11]       = get_colors1();
         table_of_info[12]       = get_colors2();
+        table_of_info[13]       = gpu_name;
 
         for(int i = 0; i < COUNT(logo); i++)
 	{
