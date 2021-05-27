@@ -1,9 +1,11 @@
 v0.1f - 2021-04-21
 ------------------
 Managed to get system resolution from Cocoa, paleofetch is now much much faster
+
 v0.1e - 2021-04-20
 ------------------
 * Changed licence, basic functionality achieved, now development will freeze, and I will learn math.
+
 v0.1d - 2021-04-18
 ------------------
 * Added speculative pages to used memory. Chnages in README
