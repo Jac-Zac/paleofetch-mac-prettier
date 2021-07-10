@@ -32,65 +32,52 @@ char *logo[] =
 "\e[38;5;45;1m       .cooc,.    .,coo:.      ",
 "\e[0m                               "
 };
-static char *exec_system_profiler(const char *cmd)
+/*
+static char *get_gpu()
 {
-        FILE *stdout_file = popen(cmd, "r");
-        char *file_ret = malloc(256 * sizeof(char));
-        if(stdout_file)
-        {
-                fgets(file_ret, 256 * sizeof(char), stdout_file);
-                pclose(stdout_file);
-        }
-        return file_ret;
-}
-/*static char *get_gpu()
-{
-        CFMutableDictionaryRef match_dictionary = IOServiceMatching("IOPCIDevice");
-        // Create a iterator to go through the found devices.
-        io_iterator_t entry_iterator;
-        if (IOServiceGetMatchingServices(kIOMasterPortDefault,
-                                        match_dictionary,
-                                        &entry_iterator) == kIOReturnSuccess)
-        {
-                // Actually iterate through the found devices.
-                io_registry_entry_t serviceObject;
-                while ((serviceObject = IOIteratorNext(entry_iterator))) {
-                // Put this services object into a dictionary object.
-                CFMutableDictionaryRef serviceDictionary;
-                if (IORegistryEntryCreateCFProperties(serviceObject,
-                                                        &serviceDictionary,
-                                                        kCFAllocatorDefault,
-                                                        kNilOptions) != kIOReturnSuccess)
-                {
-                // Failed to create a service dictionary, release and go on.
-                IOObjectRelease(serviceObject);
+    // Get dictionary of all the PCI Devicces
+    CFMutableDictionaryRef matchDict = IOServiceMatching("IOPCIDevice");
+
+    // Create an iterator
+    io_iterator_t iterator;
+
+    if (IOServiceGetMatchingServices(kIOMasterPortDefault,matchDict,
+                                     &iterator) == kIOReturnSuccess)
+    {
+        // Iterator for devices found
+        io_registry_entry_t regEntry;
+
+        while ((regEntry = IOIteratorNext(iterator))) {
+            // Put this services object into a dictionary object.
+            CFMutableDictionaryRef serviceDictionary;
+            if (IORegistryEntryCreateCFProperties(regEntry,
+                                                  &serviceDictionary,
+                                                  kCFAllocatorDefault,
+                                                  kNilOptions) != kIOReturnSuccess)
+            {
+                // Service dictionary creation failed.
+                IOObjectRelease(regEntry);
                 continue;
+            }
+            const void *GPUModel = CFDictionaryGetValue(serviceDictionary, CFSTR("model"));
+
+            if (GPUModel != nil) {
+                if (CFGetTypeID(GPUModel) == CFDataGetTypeID()) {
+                    // Create a string from the CFDataRef.
+                    NSString *modelName = [[NSString alloc] initWithData:
+                                           (NSData *)GPUModel encoding:NSASCIIStringEncoding];
+
+                    NSLog(@"GPU Model: %@", modelName);
+                    [modelName release];
                 }
-
-                // If this is a GPU listing, it will have a "model" key
-                // that points to a CFDataRef.
-                const void *model = CFDictionaryGetValue(serviceDictionary, @"model");
-                if (model != nil) 
-                {
-                        if (CFGetTypeID(model) == CFDataGetTypeID()) 
-                        {
-                                // Create a string from the CFDataRef.
-                                NSString *s = [[NSString alloc] initWithData:(NSData *)model
-                                                                encoding:NSASCIIStringEncoding];
-                                NSLog(@"Found GPU: %@", s);
-                                [s release];
-                        }
-                }
-
-                // Release the dictionary created by IORegistryEntryCreateCFProperties.
-                CFRelease(serviceDictionary);
-
-                // Release the serviceObject returned by IOIteratorNext.
-                IOObjectRelease(serviceObject);
-                }
-
-                // Release the entry_iterator created by IOServiceGetMatchingServices.
-                IOObjectRelease(entry_iterator);
+            }
+            // Release the dictionary
+            CFRelease(serviceDictionary);
+            // Release the serviceObject
+            IOObjectRelease(regEntry);
         }
+        // Release the iterator
+        IOObjectRelease(iterator);
+    }
 }
 */

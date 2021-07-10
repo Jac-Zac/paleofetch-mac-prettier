@@ -4,13 +4,11 @@ A rewrite of [neofetch](https://github.com/dylanaraps/neofetch) in C started by 
 
 Not much code was left, but name is beautiful.
 
-Currently showing only some info without logo.
-
 ## Why use paleofetch over neofetch?
 
-One major reason is the performance possible improvement.
+One major reason is the performance improvement.
 
-I used word 'possible' as some commands like `system_profiler` are executed as console command, and then grepped which is really slow(.4s), and i will try to change that.
+At least for now paleofetch execution time is around 0.05s while neofetch will execute at least a second.
 
 The plan is to support all BSDs(FreeBSD, NetBSD, OpenBSD, maybe Dragonfly), but for now only macOS.
 
@@ -22,7 +20,7 @@ Having a Mac, or one of the BSDs, you could be very helpful.
 
 ## Compiling
 
-For now i'm compiling single file, probably will configure `make` when i'll finish
+`clang src/paleofetch.c -o paleofetch  -framework Cocoa -framework IOKit`
 
 ## FAQ
 

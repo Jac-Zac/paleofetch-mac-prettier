@@ -28,7 +28,6 @@
         #include "macintosh.c"
         #define OS_VERS "kern.osproductversion"
         #define KERN_VERS "kern.osrelease"
-        char gpu_name[256];
 #endif
 #define halt_and_catch_fire(fmt, status) \
 	do { \
@@ -198,7 +197,7 @@ static char *hostname_underline(const char *input)
         size_t string_size = BUFFER256;
         snprintf(userhost, string_size, "%s%c%s", getenv("USER"), '@', input);
         size_t underline = strlen(userhost);
-	char *ret_string = malloc(underline * sizeof(char));
+	char *ret_string = malloc(underline * sizeof(char)+1);
 	int i = 0;
         for(; i < underline; i++)
         {
@@ -301,16 +300,15 @@ int main(int argc, char *argv[])
         table_of_info[10]       = get_resolution();
         table_of_info[11]       = get_colors1();
         table_of_info[12]       = get_colors2();
-        table_of_info[13]       = gpu_name;
 
         for(int i = 0; i < COUNT(logo); i++)
-	{
+        {
                 printf("%s\e[0m ", logo[i]);
-		if(table_of_info[i] != NULL)
-		{
-			printf("%s" , table_of_info[i]);
-		} 
+                if(table_of_info[i] != NULL)
+                {
+                        printf("%s" , table_of_info[i]);
+                } 
                 printf("\n");
-	}
+        }
         return ret;
 }
