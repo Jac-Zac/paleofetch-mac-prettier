@@ -153,7 +153,25 @@ static char *get_uptime()
         short hours = time / 60;
         float minutes = ((time / 60) - hours) * 6000 / 100;
         char *ret_string = malloc(BUFFER32);
-        snprintf(ret_string, BUFFER32 , "%hd %s %.0f %s", hours, "hours", minutes, "minutes");
+        char *hours_string = malloc(BUFFER32);
+        char *minutes_string = malloc(BUFFER32);
+        if (hours > 1 || hours == 0)
+        {
+                snprintf(hours_string, BUFFER32, "%hd %s", hours, "hours");
+        }
+        else
+        {
+                snprintf(hours_string, BUFFER32, "%hd %s", hours, "hour");
+        }
+        if (minutes > 1 || minutes == 0)
+        {   
+                snprintf(minutes_string, BUFFER32, "%0.f %s", minutes, "minutes");
+        }
+        else
+        {
+                snprintf(minutes_string, BUFFER32, "%0.f %s", minutes, "minute");
+        }
+        snprintf(ret_string, BUFFER32 , "%s %s", hours_string, minutes_string);
         return ret_string;
 }
 //This is based on StackOverflow code and vm_stat source code from apple.
