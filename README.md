@@ -12,7 +12,7 @@ At least for now paleofetch execution time is around 0.05s while neofetch will e
 
 The plan is to support all BSDs(FreeBSD, NetBSD, OpenBSD, maybe Dragonfly), but for now only macOS.
 
-![example output](example.gif)
+![example output](.gitlab/example.gif)
 
 ## Dependencies
 
@@ -20,7 +20,11 @@ Having a Mac, or one of the BSDs, you could be very helpful.
 
 ## Compiling
 
-`clang src/paleofetch.c -o paleofetch  -framework Cocoa -framework IOKit`
+Enter folder and type `make file` or `make`
+
+If you don't have it just type `clang src/paleofetch.c -o paleofetch  -framework Cocoa -framework IOKit`
+
+There is also option `make clean` to clean and `make dump` to make assembly code for debuging
 
 ## FAQ
 
