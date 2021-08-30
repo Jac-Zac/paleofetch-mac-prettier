@@ -1,3 +1,9 @@
+//
+//  paleofetch.h 
+//  paleofetch-mac
+//
+//  Created by DesantBucie on 07/04/2021.
+//
 static char *get_title(),
             *get_bar(),
             *complete_os(),
