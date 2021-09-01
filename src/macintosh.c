@@ -61,6 +61,14 @@ static char *get_gpu()
                         if (GPUModel != NULL) {
                                 if (CFGetTypeID(GPUModel) == CFDataGetTypeID()) {
                                         char *gpu_name = (char *)CFDataGetBytePtr(GPUModel);
+                                        for (short i=0; i < strlen(gpu_name); i++)
+                                        {
+                                                //Check if this is letter or space. If not, put null termination
+                                                if(gpu_name[i] < 32 || gpu_name[i] > 32 && gpu_name[i] < 48 || gpu_name[i] > 57 && gpu_name[i] < 65 || gpu_name[i] > 90 && gpu_name[i] < 97 || gpu_name[i] > 123 )
+                                                {
+                                                        gpu_name[i] = '\0';
+                                                }
+                                        }
                                         return gpu_name;
                                 }
                         }
