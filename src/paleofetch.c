@@ -218,13 +218,13 @@ static char *hostname_underline(const char *input)
         size_t string_size = BUFFER256;
         snprintf(userhost, string_size, "%s%c%s", getenv("USER"), '@', input);
         size_t underline = strlen(userhost);
-        char *ret_string = malloc(underline * sizeof(char)+1);
+        char *ret_string = malloc(underline * sizeof(char));
         int i = 0;
         for(; i < underline; i++)
         {
                 ret_string[i] = '-';
         }
-        ret_string[i+1] = '\n';
+        ret_string[i]='\0';
         return ret_string;
 }
 static char *get_ram_usage()
