@@ -1,6 +1,10 @@
+CFLAGS= -o paleofetch -Wall -Wextra -pedantic -framework Cocoa -framework IOKit
+
 file: clean 
 		@echo "Compiling paleofetch, please wait..."
-		@clang src/paleofetch.c -o paleofetch  -framework Cocoa -framework IOKit
+		@clang src/paleofetch.c $(CFLAGS)
+install: file
+		@sudo cp paleofetch /usr/local/bin
 clean:
 		@echo "Cleaning..."	
 		@rm -f paleofetch

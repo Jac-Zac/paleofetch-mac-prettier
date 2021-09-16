@@ -1,3 +1,8 @@
+### v0.2a - 2021-09-16
+* mac gpu support
+* Cleaned code, moved macOS only code to macintosh.c
+* Added architecutre to OS name
+
 ### v0.1f - 2021-04-21
 * Managed to get system resolution from Cocoa, paleofetch is much much faster now
 
