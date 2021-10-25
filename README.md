@@ -3,6 +3,9 @@
 A rewrite of [neofetch](https://github.com/dylanaraps/neofetch) in C started by [ss7m for linux](https://github.com/ss7m/paleofetch).
 
 Not much code was left, but name is beautiful.
+## IMPORTANT
+
+As of today I no longer have intel mac, nor I can test it on BigSur as Monterey was dropped today and first problems arrise as Apple started to deprecate some stuff(name changes from Master to Main, thanks political correctness.). This doesn't work on M1 properly, which means when I'll fix it, there is a possibility that it won't work on intel.
 
 ## Why use paleofetch over neofetch?
 
