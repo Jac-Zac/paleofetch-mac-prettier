@@ -10,4 +10,4 @@ static char *get_ram_usage(),
             *get_resolution(),
             *get_gpu();
 
-static uint get_mem_from_vm_stat();
+static uint64_t get_mem_from_vm_stat();

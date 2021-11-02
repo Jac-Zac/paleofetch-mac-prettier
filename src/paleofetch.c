@@ -20,6 +20,7 @@
 #define BUFFER32 32 * sizeof(char)
 #define BUFFER64 64 * sizeof(char)
 #define BUFFER256 256 * sizeof(char)
+#define BUFFER512 512 * sizeof(char)
 #define CPU "machdep.cpu.brand_string"
 #define MEM_SIZE "hw.memsize"
 #define HOSTNAME "kern.hostname"
@@ -32,43 +33,32 @@
         #include "macintosh.c"
 #endif
 
-static char *get_colors1()
-{
-        char *colors1 = malloc(BUFFER256);
-        char *s = colors1;
 
-        for(uint i = 0; i < 8; i++)
-        {
-                //why 3 spaces here?
-                snprintf(s, 256, "\033[4%dm   ", i);
-                s += 8;
-        }
-        strlcat(s, "\033[0m", BUFFER256);
+static char *get_colors1() {
+    char *colors1 = malloc(BUFFER512);
+    char *s = colors1;
 
-        return colors1;
+    for(int i = 0; i < 8; i++) {
+        sprintf(s, "\033[4%dm   ", i);
+        s += 8;
+    }
+    snprintf(s, 5, "\033[0m");
+
+    return colors1;
 }
-static char *get_colors2()
-{
-        char *colors2 = malloc(BUFFER256);
-        char *s = colors2;
 
-        for(uint i = 8; i < 16; i++) {
-                sprintf(s, "\033[48;5;%dm   ", i);
-                s += 12 + (i >= 10 ? 1 : 0);
-        }
-        strlcat(s, "\033[0m", BUFFER256);
+static char *get_colors2() {
+    char *colors2 = malloc(BUFFER512);
+    char *s = colors2;
 
-        return colors2;
+    for(int i = 8; i < 16; i++) {
+        sprintf(s, "\033[48;5;%dm   ", i);
+        s += 12 + (i >= 10 ? 1 : 0);
+    }
+    snprintf(s, 5, "\033[0m");
+
+    return colors2;
 }
-/*static char *concat(const char *s1, const char *s2)
-{
-        size_t string_size = strlen(s1) + strlen(s2) + 1;
-        char *result = malloc(string_size); // +1 for the null-terminator
-        // in real code you would check for errors in malloc here
-        strlcpy(result, s1, string_size);
-        strlcat(result, s2, string_size);
-        return result;
-}*/
 static char *get_sysctlbyname_info_str(const char *input)
 {
         char *sysctl_info;
@@ -105,11 +95,10 @@ static char *get_os_name(const char *cmd)
 static char *get_sysctl_info_str(const int input1, const int input2)
 {
         int mib[2] = {input1, input2};
-        char *sysctl_info;
         size_t sysctl_info_lenght;
         sysctl(mib, 2, NULL, &sysctl_info_lenght, NULL, 0);
-        sysctl_info = malloc(sysctl_info_lenght);
-        int n = sysctl(mib, 2, sysctl_info, &sysctl_info_lenght, NULL, 0);
+        char *sysctl_info = malloc(sysctl_info_lenght);
+        int n = sysctl(mib, 2, sysctl_info, &sysctl_info_lenght + 1, NULL, 0);
         if (n != 0)
         {
                 halt_and_catch_fire("sysctl error", EXIT_FAILURE);
@@ -128,6 +117,20 @@ static int64_t get_sysctl_info_int(const int input1, const int input2)
         }
         return sysctl_info;
 }
+static void *get_sysctl_info_ptr(const int input1, const int input2)
+{
+        int mib[2] = {input1, input2};
+        size_t sysctl_info_length;
+        sysctl(mib, 2, NULL, &sysctl_info_length, NULL, 0);
+        printf("%lu", sysctl_info_length);
+        void *sysctl_info = malloc(sysctl_info_length);
+        int n = sysctl(mib, 2, &sysctl_info, &sysctl_info_length + 1, NULL, 0);
+        if (n != 0)
+        {
+                halt_and_catch_fire("sysctl error", EXIT_FAILURE);
+        }
+        return sysctl_info;
+}
 static char *get_uptime()
 {
         struct timeval boottime;
@@ -139,26 +142,12 @@ static char *get_uptime()
         time = time / 60;
         uint hours = time / 60;
         float minutes = ((time / 60) - hours) * 6000 / 100;
-        char *ret_string = malloc(BUFFER32);
-        char *hours_string = malloc(BUFFER32);
-        char *minutes_string = malloc(BUFFER32);
-        if (hours > 1 || hours == 0)
-        {
-                snprintf(hours_string, BUFFER32, "%u %s", hours, "hours");
-        }
-        else
-        {
-                snprintf(hours_string, BUFFER32, "%u %s", hours, "hour");
-        }
-        if (minutes > 1 || minutes == 0)
-        {
-                snprintf(minutes_string, BUFFER32, "%0.f %s", minutes, "minutes");
-        }
-        else
-        {
-                snprintf(minutes_string, BUFFER32, "%0.f %s", minutes, "minute");
-        }
-        snprintf(ret_string, BUFFER32 , "%s %s", hours_string, minutes_string);
+        char *ret_string = malloc(BUFFER64);
+        char *hours_string = malloc(BUFFER64);
+        char *minutes_string = malloc(BUFFER64);
+        snprintf(hours_string, BUFFER64, "%u %s", hours, (hours == 0 || hours > 1 ? "hours" : "hour"));
+        snprintf(minutes_string, BUFFER64, "%0.f %s", minutes, (minutes == 0 || minutes > 1 ? "minutes" : "minute"));
+        snprintf(ret_string, BUFFER64 , "%s %s", hours_string, minutes_string);
         return ret_string;
 }
 static char *get_shell()
@@ -247,7 +236,7 @@ static char *get_user_and_host(const char *hostname)
 }*/
 int main()
 {       
-        char *table_of_info[BUFFER256];
+        char *table_of_info[50];
         struct utsname details;
         int ret = uname(&details);
         table_of_info[0]        = get_user_and_host(details.nodename);
@@ -265,7 +254,11 @@ int main()
         table_of_info[12]       = "";
         table_of_info[13]       = get_colors1();
         table_of_info[14]       = get_colors2();
-
+        
+        for(uint i = 15; i <= 20; i++){
+            table_of_info[i] = "";
+        }
+        
         for(uint i = 0; i < COUNT(logo); i++)
         {
                 printf("%s\033[0m ", logo[i]);

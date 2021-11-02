@@ -6,7 +6,7 @@
 //
 static char     *get_colors1(),
                 *get_colors2(),
-		*get_uptime(),
+                *get_uptime(),
                 *get_shell(),
                 *get_sysctlbyname_info_str(const char *input),
                 *get_os_name(const char *cmd),
@@ -60,8 +60,3 @@ typedef unsigned long ulong;
 { \
 	REMOVE("Corporation"), \
 }
-struct color_numbers
-{
-        short color1;
-        short color2;
-};
