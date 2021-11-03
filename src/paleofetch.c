@@ -139,15 +139,18 @@ static char *get_uptime()
         sysctl(mib, 2, &boottime, &len, NULL, 0);
         time_t bsec = boottime.tv_sec, csec = time(NULL);
         float time = difftime(csec, bsec);
-        time = time / 60;
-        uint hours = time / 60;
-        float minutes = ((time / 60) - hours) * 6000 / 100;
+        uint days = time / ( 60 * 60 * 24);
+        uint hours = (uint)(time / 60) % 24;
+        uint minutes = (uint)time % 60;
+
         char *ret_string = malloc(BUFFER64);
+        char *days_string = malloc(BUFFER64);
         char *hours_string = malloc(BUFFER64);
         char *minutes_string = malloc(BUFFER64);
+        snprintf(days_string, BUFFER64, "%u %s", days, (days == 0 || days > 1 ? "days" : "day"));
         snprintf(hours_string, BUFFER64, "%u %s", hours, (hours == 0 || hours > 1 ? "hours" : "hour"));
-        snprintf(minutes_string, BUFFER64, "%0.f %s", minutes, (minutes == 0 || minutes > 1 ? "minutes" : "minute"));
-        snprintf(ret_string, BUFFER64 , "%s %s", hours_string, minutes_string);
+        snprintf(minutes_string, BUFFER64, "%u %s", minutes, (minutes == 0 || minutes > 1 ? "minutes" : "minute"));
+        snprintf(ret_string, BUFFER64 , "%s %s %s", days_string, hours_string, minutes_string);
         return ret_string;
 }
 static char *get_shell()

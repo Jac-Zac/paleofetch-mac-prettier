@@ -1,3 +1,8 @@
+### v0.2b - 2021-11-02
+* support for m1, m1 gpu etc
+* fixed memory on m1(hopefully works on intel64 as well)
+* added days in uptime
+
 ### v0.2a - 2021-09-16
 * mac gpu support
 * Cleaned code, moved macOS only code to macintosh.c
