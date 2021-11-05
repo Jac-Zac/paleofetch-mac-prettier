@@ -15,33 +15,13 @@
 
 #define OS_VERS "kern.osproductversion"
 
+
 char *pgmname;
-char *logo[] =
-{
-"\033[38;5;76;1m                    'c.        ",
-"\033[38;5;76;1m                 ,xNMM.        ",
-"\033[38;5;76;1m               .OMMMMo         ",
-"\033[38;5;76;1m               OMMM0,          ",
-"\033[38;5;76;1m     .;loddo:' loolloddol;.    ",
-"\033[38;5;76;1m   cKMMMMMMMMMMNWMMMMMMMMMM0:  ",
-"\033[38;5;184;1m .KMMMMMMMMMMMMMMMMMMMMMMMWd.  ",
-"\033[38;5;184;1m XMMMMMMMMMMMMMMMMMMMMMMMX.    ",
-"\033[38;5;208;1m;MMMMMMMMMMMMMMMMMMMMMMMM:     ",
-"\033[38;5;208;1m:MMMMMMMMMMMMMMMMMMMMMMMM:     ",
-"\033[38;5;196;1m.MMMMMMMMMMMMMMMMMMMMMMMMX.    ",
-"\033[38;5;196;1m kMMMMMMMMMMMMMMMMMMMMMMMMWd.  ",
-"\033[38;5;129;1m .XMMMMMMMMMMMMMMMMMMMMMMMMMMk ",
-"\033[38;5;129;1m  .XMMMMMMMMMMMMMMMMMMMMMMMMK. ",
-"\033[38;5;45;1m    kMMMMMMMMMMMMMMMMMMMMMMd   ",
-"\033[38;5;45;1m     ;KMMMMMMMWXXWMMMMMMMk.    ",
-"\033[38;5;45;1m       .cooc,.    .,coo:.      ",
-"\033[0m                               "
-};
-static char *get_kernel(const char *version)
+static char *get_kernel()
 {
         char *kernel = malloc(BUFFER64);
         strlcpy(kernel, "Darwin ", BUFFER64);
-        strlcat(kernel, version, BUFFER64);
+        strlcat(kernel, details.release, BUFFER64);
         return kernel;
         
 }
@@ -62,21 +42,22 @@ static uint64_t get_mem_from_vm_stat()
         total >>= 20;
         return total;
 }
+
 static char *get_ram_usage()
 {
         long ram_size = get_sysctl_info_int(CTL_HW, HW_MEMSIZE);
         uint ram_size_short = ram_size >> 20;
         uint64_t used_memory = get_mem_from_vm_stat();
         char *ram_usage = malloc(BUFFER64);
-        snprintf(ram_usage, BUFFER64, "%lluMB/%dMB %c%llu%s", used_memory, ram_size_short, '(', used_memory * 100/ram_size_short , "%)");
+        snprintf(ram_usage, BUFFER64, "%lluMB/%dMB %c%llu%s", used_memory, ram_size_short, '(', used_memory * 100/(ram_size_short != 0 ? ram_size_short : 1) , "%)");
         return ram_usage;
 }
-static char *complete_os(const char *input)
+static char *complete_os()
 {
         char *cmd_build = "sw_vers -buildVersion";
         char *cmd_name  = "sw_vers -productName";
         char *os        = malloc(BUFFER256);
-        sprintf(os, "%s %s %s %s", get_os_name(cmd_name), get_sysctlbyname_info_str(OS_VERS), get_os_name(cmd_build), input);
+        sprintf(os, "%s %s %s %s", get_os_name(cmd_name), get_sysctlbyname_info_str(OS_VERS), get_os_name(cmd_build), details.machine);
         return os;
 }
 static char *get_resolution()

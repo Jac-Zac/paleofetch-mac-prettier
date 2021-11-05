@@ -4,7 +4,7 @@ OPT= -Ofast
 
 file: clean 
 		@echo "Compiling paleofetch, please wait..."
-		@CC src/paleofetch.c $(CFLAGS) $(OPT)
+		@CC src/paleofetch.c src/macintosh.c $(CFLAGS) $(OPT)
 install: file
 		@sudo cp paleofetch /usr/local/bin
 clean:
