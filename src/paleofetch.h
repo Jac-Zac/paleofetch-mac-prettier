@@ -7,45 +7,22 @@
 
 #ifndef PALEOFETCH_H
 #define PALEOFETCH_H
-#include <sys/utsname.h>
 
-static char     *get_colors1(),
-                *get_colors2(),
-                *get_uptime(),
-                *get_shell(),
-                *get_cpu(),
-                *get_terminal(),
-                *get_machine(),
-                *spacer(),
-                *get_os_name(),
-                *hostname_underline(),
-                *get_user_and_host();
+static char     *get_colors1(void),
+                *get_colors2(void),
+                *get_uptime(void),
+                *get_shell(void),
+                *get_cpu(void),
+                *get_terminal(void),
+                *get_machine(void),
+                *spacer(void),
+                *hostname_underline(void),
+                *get_user_and_host(void);
 
-static int64_t get_sysctl_info_int(const int input1, const int input2);
 
 typedef unsigned long ulong;
-struct utsname details;
 
-#define BUFFER32 32 * sizeof(char)
-#define BUFFER64 64 * sizeof(char)
-#define BUFFER256 256 * sizeof(char)
-#define BUFFER512 512 * sizeof(char)
-#define CPU "machdep.cpu.brand_string"
-#define MEM_SIZE "hw.memsize"
-#define HOSTNAME "kern.hostname"
-#define PAGES "vm.pages"
-#define LOGICAL_CPU "hw.logicalcpu"
-#define MODEL "hw.model"
 #define COUNT(x) (uint)(sizeof x / sizeof *x)
-
-#define halt_and_catch_fire(fmt, status) \
-        do { \
-                if(status != 0) { \
-                        fprintf(stderr, "paleofetch: " fmt "\n"); \
-                        exit(status); \
-                } \
-        } while(0)
-
 #define SPACER {"", spacer, false},
 #define REMOVE(A) { (A), NULL, sizeof(A) - 1 , 0 }
 #define REPLACE(A, B) { (A), (B), sizeof(A) - 1, sizeof(B) - 1 }
@@ -54,7 +31,7 @@ struct utsname details;
 { \
     /* name            function             cached */\
     { "",             get_user_and_host,    false }, \
-    { "",             hostname_underline,    false }, \
+    { "",             hostname_underline,   false }, \
 	{ "Shell: ",      get_shell,            false }, \
 	{ "Kernel: ",     get_kernel,           false }, \
     { "Machine: ",    get_machine,          false }, \

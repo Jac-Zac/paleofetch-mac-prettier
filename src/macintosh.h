@@ -1,4 +1,3 @@
-
 //
 //  macintosh.h 
 //  paleofetch-mac
@@ -7,9 +6,8 @@
 //
 #ifndef MACINTOSH_H
 #define MACINTOSH_H
-#include "paleofetch.h"
 
-char *logo[] =
+const char *logo[] =
 {
 "\033[38;5;76;1m                    'c.        ",
 "\033[38;5;76;1m                 ,xNMM.        ",
@@ -30,11 +28,12 @@ char *logo[] =
 "\033[38;5;45;1m       .cooc,.    .,coo:.      ",
 "\033[0m                               "
 };
-static char *get_ram_usage(),
-            *get_kernel(),
-            *complete_os(),
-            *get_resolution(),
-            *get_gpu();
+static char *get_os_name(const char*),
+            *get_ram_usage(void),
+            *get_kernel(void),
+            *complete_os(void),
+            *get_resolution(void),
+            *get_gpu(void);
 
 static uint64_t get_mem_from_vm_stat();
 

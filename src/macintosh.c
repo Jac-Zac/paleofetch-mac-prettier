@@ -11,12 +11,34 @@
 #include <mach/mach.h>
 #include <mach/vm_page_size.h>
 
+#include "sysctl_info.h"
 #include "macintosh.h"
 
 #define OS_VERS "kern.osproductversion"
 
 
 char *pgmname;
+
+static char *get_os_name(const char *cmd)
+{
+        FILE *stdout_file = popen(cmd, "r");
+        char *os_name = malloc(8);
+        if (stdout_file)
+        {
+                fgets(os_name, 8, stdout_file);
+                pclose(stdout_file);
+        }
+        for (uint i = strlen(os_name); i != 0; i--)
+        {
+                if(os_name[i] == '\n')
+                {
+                        os_name[i] = '\0';
+                        break;
+                }      
+        }
+        return os_name;
+
+}
 static char *get_kernel()
 {
         char *kernel = malloc(BUFFER64);

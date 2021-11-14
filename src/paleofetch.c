@@ -4,6 +4,7 @@
 //
 //  Created by DesantBucie on 07/04/2021.
 //
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -12,14 +13,12 @@
 #include <stdbool.h>
 #include <errno.h>
 
-#include <sys/sysctl.h>
-
 #include "paleofetch.h"
+#include "sysctl_info.h"
 
-
-#if defined(__MACH__) || defined(__APPLE__)
+//#if defined(__MACH__) || defined(__APPLE__)
         #include "macintosh.h"
-#endif
+//#endif
 
 
 struct conf {
@@ -53,78 +52,6 @@ static char *get_colors2() {
 
     return colors2;
 }
-static char *get_sysctlbyname_info_str(const char *input)
-{
-        char *sysctl_info;
-        size_t sysctl_info_length;
-        sysctlbyname(input, NULL, &sysctl_info_length, NULL, 0);
-        sysctl_info = malloc(sysctl_info_length);
-        int n = sysctlbyname(input, sysctl_info, &sysctl_info_length, NULL, 0);
-        if (n != 0)
-        {
-                halt_and_catch_fire("sysctlbyname error", EXIT_FAILURE);
-        }
-        return sysctl_info;
-}
-static char *get_sysctl_info_str(const int input1, const int input2)
-{
-        int mib[2] = {input1, input2};
-        size_t sysctl_info_lenght;
-        sysctl(mib, 2, NULL, &sysctl_info_lenght, NULL, 0);
-        char *sysctl_info = malloc(sysctl_info_lenght);
-        int n = sysctl(mib, 2, sysctl_info, &sysctl_info_lenght + 1, NULL, 0);
-        if (n != 0)
-        {
-                halt_and_catch_fire("sysctl error", EXIT_FAILURE);
-        }
-        return sysctl_info;
-}
-static int64_t get_sysctl_info_int(const int input1, const int input2)
-{
-        int mib[2] = {input1, input2};
-        int64_t sysctl_info;
-        size_t sysctl_info_length = sizeof(sysctl_info);
-        int n = sysctl(mib, 2, &sysctl_info, &sysctl_info_length, NULL, 0);
-        if (n != 0)
-        {
-                halt_and_catch_fire("sysctl error", EXIT_FAILURE);
-        }
-        return sysctl_info;
-}
-static void *get_sysctl_info_ptr(const int input1, const int input2)
-{
-        int mib[2] = {input1, input2};
-        size_t sysctl_info_length;
-        sysctl(mib, 2, NULL, &sysctl_info_length, NULL, 0);
-        printf("%lu", sysctl_info_length);
-        void *sysctl_info = malloc(sysctl_info_length);
-        int n = sysctl(mib, 2, &sysctl_info, &sysctl_info_length + 1, NULL, 0);
-        if (n != 0)
-        {
-                halt_and_catch_fire("sysctl error", EXIT_FAILURE);
-        }
-        return sysctl_info;
-}
-static char *get_os_name(const char *cmd)
-{
-        FILE *stdout_file = popen(cmd, "r");
-        char *os_name = malloc(8);
-        if (stdout_file)
-        {
-                fgets(os_name, 8, stdout_file);
-                pclose(stdout_file);
-        }
-        for (uint i = strlen(os_name); i != 0; i--)
-        {
-                if(os_name[i] == '\n')
-                {
-                        os_name[i] = '\0';
-                        break;
-                }      
-        }
-        return os_name;
-
-}
 static char *get_uptime()
 {
         struct timeval boottime;
@@ -145,6 +72,7 @@ static char *get_uptime()
         snprintf(hours_string, BUFFER64, "%u %s", hours, (hours == 0 || hours > 1 ? "hours" : "hour"));
         snprintf(minutes_string, BUFFER64, "%u %s", minutes, (minutes == 0 || minutes > 1 ? "minutes" : "minute"));
         snprintf(ret_string, BUFFER64 , "%s %s %s", days_string, hours_string, minutes_string);
+        free(days_string); free(hours_string); free(minutes_string);
         return ret_string;
 }
 static char *get_shell()
@@ -171,6 +99,7 @@ static char *hostname_underline()
         size_t string_size = BUFFER256;
         snprintf(userhost, string_size, "%s%c%s", getenv("USER"), '@', details.nodename);
         size_t underline = strlen(userhost) * sizeof(char);
+        free(userhost);
         char *ret_string = malloc(underline);
         uint i = 0;
         for(;i < underline; i++)
@@ -223,8 +152,6 @@ static char *get_user_and_host()
 {
         FILE *cache_file;
         if(cache_file = fopen("~/.cache/paleofetch", "r")!=NULL)
-        {
-                
         }
         else
         {
@@ -247,11 +174,7 @@ int main()
 {       
         char *table_of_info[50];
         int ret = uname(&details);
-       table_of_info[14]       = get_colors2();
-        
-        for(uint i = 15; i <= 20; i++){
-            table_of_info[i] = "";
-        }
+        table_of_info[14]       = get_colors2();
         
         for(uint i = 0; i < COUNT(logo); i++)
         {
