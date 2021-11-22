@@ -1,6 +1,6 @@
 #include "sysctl_info.h"
 
-static char *get_sysctlbyname_info_str(const char *input)
+char *get_sysctlbyname_info_str(const char *input)
 {
         char *sysctl_info;
         size_t sysctl_info_length;
@@ -13,7 +13,7 @@ static char *get_sysctlbyname_info_str(const char *input)
         }
         return sysctl_info;
 }
-static char *get_sysctl_info_str(const int input1, const int input2)
+char *get_sysctl_info_str(const int input1, const int input2)
 {
         int mib[2] = {input1, input2};
         size_t sysctl_info_lenght;
@@ -26,7 +26,7 @@ static char *get_sysctl_info_str(const int input1, const int input2)
         }
         return sysctl_info;
 }
-static int64_t get_sysctl_info_int(const int input1, const int input2)
+int64_t get_sysctl_info_int(const int input1, const int input2)
 {
         int mib[2] = {input1, input2};
         int64_t sysctl_info;
@@ -38,7 +38,7 @@ static int64_t get_sysctl_info_int(const int input1, const int input2)
         }
         return sysctl_info;
 }
-static void *get_sysctl_info_ptr(const int input1, const int input2)
+void *get_sysctl_info_ptr(const int input1, const int input2)
 {
         int mib[2] = {input1, input2};
         size_t sysctl_info_length;

@@ -5,7 +5,6 @@
 //  Created by DesantBucie on 07/04/2021.
 //
 
-#include <ctype.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -16,18 +15,19 @@
 #include "paleofetch.h"
 #include "sysctl_info.h"
 
-//#if defined(__MACH__) || defined(__APPLE__)
-        #include "macintosh.h"
-//#endif
+#if defined(__MACH__) || defined(__APPLE__)
+#include "macintosh.h"
+#include "logos/macintosh_logo.h"
+#endif
 
 
 struct conf {
     char *label;    
     char *(*function)();
-    _Bool cached;
+    bool cached;
 } config[] = CONFIG;
 
-static char *get_colors1() {
+char *get_colors1() {
     char *colors1 = malloc(BUFFER512);
     char *s = colors1;
 
@@ -40,7 +40,7 @@ static char *get_colors1() {
     return colors1;
 }
 
-static char *get_colors2() {
+char *get_colors2() {
     char *colors2 = malloc(BUFFER512);
     char *s = colors2;
 
@@ -52,12 +52,13 @@ static char *get_colors2() {
 
     return colors2;
 }
-static char *get_uptime()
+char *get_uptime()
 {
         struct timeval boottime;
         size_t len = sizeof(boottime);
         int mib[2] = {CTL_KERN, KERN_BOOTTIME};
         sysctl(mib, 2, &boottime, &len, NULL, 0);
+        
         time_t bsec = boottime.tv_sec, csec = time(NULL);
         float time = difftime(csec, bsec) / 60;
         uint days = time / (60 * 24);
@@ -68,14 +69,18 @@ static char *get_uptime()
         char *days_string = malloc(BUFFER64);
         char *hours_string = malloc(BUFFER64);
         char *minutes_string = malloc(BUFFER64);
-        snprintf(days_string, BUFFER64, "%u %s", days, (days == 0 || days > 1 ? "days" : "day"));
-        snprintf(hours_string, BUFFER64, "%u %s", hours, (hours == 0 || hours > 1 ? "hours" : "hour"));
+        if(days > 0)
+            snprintf(days_string, BUFFER64, "%u %s", days, (days > 1 ? "days" : "day"));
+        if(hours > 0)
+            snprintf(hours_string, BUFFER64, "%u %s", hours, (hours == 0 || hours > 1 ? "hours" : "hour"));
         snprintf(minutes_string, BUFFER64, "%u %s", minutes, (minutes == 0 || minutes > 1 ? "minutes" : "minute"));
         snprintf(ret_string, BUFFER64 , "%s %s %s", days_string, hours_string, minutes_string);
+        
         free(days_string); free(hours_string); free(minutes_string);
-        return ret_string;
+        
+        return ret_string;    
 }
-static char *get_shell()
+char *get_shell()
 {
         char *shell      = malloc(BUFFER256);
         char *shell_path = getenv("SHELL");
@@ -88,12 +93,10 @@ static char *get_shell()
         }
         return shell;
 }
-static char *hostname_underline()
+char *hostname_underline()
 {
-        //
         // Composing username@hostname second time,
         // to properly calculate string lenght without ESC chars etc
-        //
     
         char *userhost     = malloc(BUFFER256);
         size_t string_size = BUFFER256;
@@ -109,7 +112,7 @@ static char *hostname_underline()
         ret_string[i] = '\0';
         return ret_string;
 }
-/*static int check_for_pkg_info()
+/* int check_for_pkg_info()
 {
         int ret_int = 0;
         if(access("/opt/pkg/sbin/pkg_info"))
@@ -130,7 +133,7 @@ static char *hostname_underline()
         }
         return ret_int;
 }
-static char *look_for_package_managers()
+ char *look_for_package_managers()
 {
         char *packages = malloc(BUFFER256);
         int number = check_for_pkg_info();
@@ -142,13 +145,13 @@ static char *look_for_package_managers()
         return packages;
 }
 */
-static char *get_user_and_host()
+ char *get_user_and_host()
 {
         char *userhost = malloc(BUFFER256);;
         snprintf(userhost, BUFFER256, "%s%s%s%s%s", "\033[1m", getenv("USER"), "\033[0m@\033[1m", details.nodename, "\033[0m");
         return userhost;
 }
-/*static void cache info()
+/* void cache info()
 {
         FILE *cache_file;
         if(cache_file = fopen("~/.cache/paleofetch", "r")!=NULL)
@@ -158,39 +161,48 @@ static char *get_user_and_host()
                 
         }
 }*/
-static char *get_cpu(){
+char *get_cpu(){
     return get_sysctlbyname_info_str(CPU);
 }
-static char *get_terminal(){
+char *get_terminal(){
     return getenv("TERM_PROGRAM");
 }
-static char *spacer(){
-    return "\n";
+char *spacer(){
+    return " ";
 }
-static char *get_machine(){
+char *get_machine(){
     return get_sysctl_info_str(CTL_HW, HW_MODEL);
 }
 int main()
 {       
-        char *table_of_info[50];
         int ret = uname(&details);
-        table_of_info[14]       = get_colors2();
-        
-        for(uint i = 0; i < COUNT(logo); i++)
+
+        uint logo_size = sizeof logo / sizeof *logo;
+        uint config_size = sizeof config / sizeof *config;
+        //sets which size we should base our iteration on, logo size or info size.
+        uint which_bigger = logo_size > config_size ? logo_size : config_size;
+
+        for(uint i = 0; i < which_bigger; i++)
         {
-            if( i>= COUNT(config)) {
-                printf("%s\033[0m\n", logo[i]);
+            // if i > count, we will print only logo, as we already are iterating on it's size.
+            if(i >= COUNT(config)) {
+                printf("%s\033[0m", logo[i]);
             }
+            // If we run out of logo, but we have still info to print, we will have to 
+            // print spaces corresponding to logos width, and then print our info.
+            else if( i >= COUNT(logo) && i <= COUNT(config)) {
+                for(int j = 0; j < logo_line_lenght; j++){
+                    printf("%c",' ');
+                }
+                printf("\033[1m%s\033[0m%s" , config[i].label, config[i].function());
+            }
+            // The only option left is that we have both info and logo to print.
             else { 
                 printf("%s\033[0m ", logo[i]);
-                if(table_of_info[i] != NULL)
-                {
-                        printf("%s" , config[i].function());
-                }
-                puts("");
+                printf("\033[1m%s\033[0m%s" , config[i].label, config[i].function());
             }
+            puts("");
         }
         return ret;
-        
 }
 

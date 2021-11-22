@@ -1,3 +1,7 @@
+### v0.3 - 2021-11-22
+* reworked program to work more like original(author was way smarter than me)
+* Added printing labels by default
+
 ### v0.2b - 2021-11-02
 * support for m1, m1 gpu etc
 * fixed memory on m1(hopefully works on intel64 as well)

@@ -1,5 +1,4 @@
 SRC=src/paleofetch.c src/macintosh.c src/sysctl_info.c
-OBJ=paleofetch.o macintosh.o sysctl_info.o 
 BIN=-o paleofetch
 CFLAGS=-Wall -Wextra -framework Cocoa -framework IOKit
 CC=clang

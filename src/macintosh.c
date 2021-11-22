@@ -19,7 +19,7 @@
 
 char *pgmname;
 
-static char *get_os_name(const char *cmd)
+char *get_os_name(const char *cmd)
 {
         FILE *stdout_file = popen(cmd, "r");
         char *os_name = malloc(8);
@@ -39,7 +39,7 @@ static char *get_os_name(const char *cmd)
         return os_name;
 
 }
-static char *get_kernel()
+char *get_kernel()
 {
         char *kernel = malloc(BUFFER64);
         strlcpy(kernel, "Darwin ", BUFFER64);
@@ -47,7 +47,7 @@ static char *get_kernel()
         return kernel;
         
 }
-static uint64_t get_mem_from_vm_stat()
+uint64_t get_mem_from_vm_stat()
 {
         mach_port_t myHost;
         vm_statistics64_data_t vm_stat;
@@ -65,7 +65,7 @@ static uint64_t get_mem_from_vm_stat()
         return total;
 }
 
-static char *get_ram_usage()
+char *get_ram_usage()
 {
         long ram_size = get_sysctl_info_int(CTL_HW, HW_MEMSIZE);
         uint ram_size_short = ram_size >> 20;
@@ -74,7 +74,7 @@ static char *get_ram_usage()
         snprintf(ram_usage, BUFFER64, "%lluMB/%dMB %c%llu%s", used_memory, ram_size_short, '(', used_memory * 100/(ram_size_short != 0 ? ram_size_short : 1) , "%)");
         return ram_usage;
 }
-static char *complete_os()
+char *complete_os()
 {
         char *cmd_build = "sw_vers -buildVersion";
         char *cmd_name  = "sw_vers -productName";
@@ -82,7 +82,7 @@ static char *complete_os()
         sprintf(os, "%s %s %s %s", get_os_name(cmd_name), get_sysctlbyname_info_str(OS_VERS), get_os_name(cmd_build), details.machine);
         return os;
 }
-static char *get_resolution()
+char *get_resolution()
 {
         uint screen_width = CGDisplayPixelsWide(CGMainDisplayID());
         uint screen_height = CGDisplayPixelsHigh(CGMainDisplayID());
@@ -101,7 +101,7 @@ static char *get_resolution()
     defined(__ARM_ARCH_6KZ__) || defined(__ARM_ARCH_6T2__) || \
     defined(__ARM_ARCH_5TE__) || defined(__ARM_ARCH_5TEJ__) || \
     defined(__ARM_ARCH_4T__) || defined(__ARM_ARCH_4__)
-static char *get_gpu()
+char *get_gpu()
 {
     char *s = malloc(BUFFER256);
     snprintf(s, BUFFER256, "%s iGPU", get_sysctlbyname_info_str(CPU));
@@ -117,7 +117,7 @@ static char *get_gpu()
     defined(_M_PPC) || defined(_ARCH_PPC) || \
     defined(__PPCGECKO__) || defined(__PPCBROADWAY__) || \
     defined(_XENON)
-static char *get_gpu()
+char *get_gpu()
 {
         CFMutableDictionaryRef matchDict = IOServiceMatching("IOPCIDevice");
         

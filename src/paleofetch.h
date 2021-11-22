@@ -8,7 +8,7 @@
 #ifndef PALEOFETCH_H
 #define PALEOFETCH_H
 
-static char     *get_colors1(void),
+char            *get_colors1(void),
                 *get_colors2(void),
                 *get_uptime(void),
                 *get_shell(void),
@@ -24,8 +24,8 @@ typedef unsigned long ulong;
 
 #define COUNT(x) (uint)(sizeof x / sizeof *x)
 #define SPACER {"", spacer, false},
-#define REMOVE(A) { (A), NULL, sizeof(A) - 1 , 0 }
-#define REPLACE(A, B) { (A), (B), sizeof(A) - 1, sizeof(B) - 1 }
+//#define REMOVE(A) { (A), NULL, sizeof(A) - 1 , 0 }
+//#define REPLACE(A, B) { (A), (B), sizeof(A) - 1, sizeof(B) - 1 }
 
 #define CONFIG \
 { \
@@ -33,20 +33,22 @@ typedef unsigned long ulong;
     { "",             get_user_and_host,    false }, \
     { "",             hostname_underline,   false }, \
 	{ "Shell: ",      get_shell,            false }, \
+	{ "OS: ",		  complete_os,          false }, \
 	{ "Kernel: ",     get_kernel,           false }, \
     { "Machine: ",    get_machine,          false }, \
 	{ "Uptime: ",     get_uptime,           false }, \
 	{ "Resolution: ", get_resolution,       false }, \
 	{ "Terminal: ",   get_terminal,         false }, \
+	{ "RAM: ", 		  get_ram_usage,		false }, \
 	{ "CPU: ",        get_cpu,              false }, \
 	{ "GPU: ",        get_gpu,              false }, \
-    SPACER \
+	SPACER \
 	{ "",             get_colors1,          false }, \
 	{ "",             get_colors2,          false }, \
 }
 
 
-#define CPU_CONFIG \
+/*#define CPU_CONFIG \
 { \
 	REMOVE("(R)"), \
 	REMOVE("(TM)"), \
@@ -61,6 +63,6 @@ typedef unsigned long ulong;
 #define GPU_CONFIG \
 { \
 	REMOVE("Corporation"), \
-}
+}*/
 
 #endif
