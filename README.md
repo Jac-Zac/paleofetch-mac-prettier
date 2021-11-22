@@ -33,6 +33,8 @@ There is also option `make clean` to clean and `make dump` to make assembly code
 ## FAQ
 
 **Q**: Do you really run neofetch every time you open a terminal?  
+
 **ss7m**: Yes, I like the way it looks and like that it causes my prompt to start midway
-down the screen. I do acknowledge that the information it presents is not actually useful.<br/>
+down the screen. I do acknowledge that the information it presents is not actually useful.
+
 **DB**: Yea, me too that's why I forked it.

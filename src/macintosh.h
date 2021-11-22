@@ -4,10 +4,17 @@
 //
 //  Created by DesantBucie on 16/09/2021.
 //
-static char *get_ram_usage(),
-            *get_kernel(),
-            *complete_os(),
-            *get_resolution(),
-            *get_gpu();
+#ifndef MACINTOSH_H
+#define MACINTOSH_H
+#include <stdint.h>
 
-static uint64_t get_mem_from_vm_stat();
+char        *get_os_name(const char*),
+            *get_ram_usage(void),
+            *get_kernel(void),
+            *complete_os(void),
+            *get_resolution(void),
+            *get_gpu(void);
+
+uint64_t get_mem_from_vm_stat();
+
+#endif
