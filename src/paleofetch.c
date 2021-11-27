@@ -4,7 +4,6 @@
 //
 //  Created by DesantBucie on 07/04/2021.
 //
-
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -19,7 +18,6 @@
 #include "macintosh.h"
 #include "logos/macintosh_logo.h"
 #endif
-
 
 struct conf {
     char *label;    
@@ -57,8 +55,11 @@ char *get_uptime()
         struct timeval boottime;
         size_t len = sizeof(boottime);
         int mib[2] = {CTL_KERN, KERN_BOOTTIME};
-        sysctl(mib, 2, &boottime, &len, NULL, 0);
-        
+        int err = sysctl(mib, 2, &boottime, &len, NULL, 0);
+        if (err != 0){
+            halt_and_catch_fire("sysctl error", EXIT_FAILURE);
+        }
+
         time_t bsec = boottime.tv_sec, csec = time(NULL);
         float time = difftime(csec, bsec) / 60;
         uint days = time / (60 * 24);
@@ -70,11 +71,12 @@ char *get_uptime()
         char *hours_string = malloc(BUFFER64);
         char *minutes_string = malloc(BUFFER64);
         if(days > 0)
-            snprintf(days_string, BUFFER64, "%u %s", days, (days > 1 ? "days" : "day"));
+            snprintf(days_string, BUFFER64, "%u %s", days, (days > 1 ? "days " : "day "));
         if(hours > 0)
-            snprintf(hours_string, BUFFER64, "%u %s", hours, (hours == 0 || hours > 1 ? "hours" : "hour"));
+            snprintf(hours_string, BUFFER64, "%u %s", hours, (hours == 0 || hours > 1 ? "hours " : "hour "));
+
         snprintf(minutes_string, BUFFER64, "%u %s", minutes, (minutes == 0 || minutes > 1 ? "minutes" : "minute"));
-        snprintf(ret_string, BUFFER64 , "%s %s %s", days_string, hours_string, minutes_string);
+        snprintf(ret_string, BUFFER64 , "%s%s%s", days_string, hours_string, minutes_string);
         
         free(days_string); free(hours_string); free(minutes_string);
         
@@ -171,7 +173,7 @@ char *spacer(){
     return " ";
 }
 char *get_machine(){
-    return get_sysctl_info_str(CTL_HW, HW_MODEL);
+    return get_sysctl_info(CTL_HW, HW_MODEL);
 }
 int main()
 {       

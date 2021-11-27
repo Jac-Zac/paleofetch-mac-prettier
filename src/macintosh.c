@@ -10,6 +10,7 @@
 
 #include <mach/mach.h>
 #include <mach/vm_page_size.h>
+#include <stdint.h>
 
 #include "sysctl_info.h"
 #include "macintosh.h"
@@ -67,8 +68,9 @@ uint64_t get_mem_from_vm_stat()
 
 char *get_ram_usage()
 {
-        long ram_size = get_sysctl_info_int(CTL_HW, HW_MEMSIZE);
-        uint ram_size_short = ram_size >> 20;
+        
+        int64_t *ram_size =(int64_t *)get_sysctl_info(CTL_HW, HW_MEMSIZE);
+        uint ram_size_short = ram_size[0] >> 20;
         uint64_t used_memory = get_mem_from_vm_stat();
         char *ram_usage = malloc(BUFFER64);
         snprintf(ram_usage, BUFFER64, "%lluMB/%dMB %c%llu%s", used_memory, ram_size_short, '(', used_memory * 100/(ram_size_short != 0 ? ram_size_short : 1) , "%)");

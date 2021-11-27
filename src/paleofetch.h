@@ -19,7 +19,6 @@ char            *get_colors1(void),
                 *hostname_underline(void),
                 *get_user_and_host(void);
 
-
 typedef unsigned long ulong;
 
 #define COUNT(x) (uint)(sizeof x / sizeof *x)
@@ -65,4 +64,4 @@ typedef unsigned long ulong;
 	REMOVE("Corporation"), \
 }*/
 
-#endif
+#endif //PALEOFETCH_H

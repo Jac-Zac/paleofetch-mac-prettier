@@ -17,4 +17,4 @@ char        *get_os_name(const char*),
 
 uint64_t get_mem_from_vm_stat();
 
-#endif
+#endif //MACINTOSH_H

@@ -1,3 +1,7 @@
+### v0.3b - 2021-11-27
+* merge get_sysctl_info_int and get_sysctl_info_str into one.
+* fixed date printing two spaces, when minutes are equal to zero.
+
 ### v0.3 - 2021-11-22
 * reworked program to work more like original(author was way smarter than me)
 * Added printing labels by default
