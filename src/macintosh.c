@@ -4,7 +4,6 @@
 //
 //  Created by DesantBucie on 07/04/2021.
 //
-
 #include <IOKit/IOKitLib.h>
 #include <ApplicationServices/ApplicationServices.h>
 
@@ -16,7 +15,6 @@
 #include "macintosh.h"
 
 #define OS_VERS "kern.osproductversion"
-
 
 char *pgmname;
 
@@ -68,12 +66,12 @@ uint64_t get_mem_from_vm_stat()
 
 char *get_ram_usage()
 {
-        
         int64_t *ram_size =(int64_t *)get_sysctl_info(CTL_HW, HW_MEMSIZE);
         uint ram_size_short = ram_size[0] >> 20;
         uint64_t used_memory = get_mem_from_vm_stat();
         char *ram_usage = malloc(BUFFER64);
-        snprintf(ram_usage, BUFFER64, "%lluMB/%dMB %c%llu%s", used_memory, ram_size_short, '(', used_memory * 100/(ram_size_short != 0 ? ram_size_short : 1) , "%)");
+        snprintf(ram_usage, BUFFER64, "%lluMB/%dMB %c%llu%s",
+                used_memory, ram_size_short, '(', used_memory * 100/(ram_size_short != 0 ? ram_size_short : 1) , "%)");
         return ram_usage;
 }
 char *complete_os()
@@ -92,33 +90,14 @@ char *get_resolution()
         snprintf(resolution, BUFFER64, "%u%c%u", screen_width, 'x', screen_height);
         return resolution;
 }
-#if \
-    defined(__ARM_ARCH) || defined(__TARGET_ARCH_ARM) || \
-    defined(__TARGET_ARCH_THUMB) || defined(_M_ARM) || \
-    defined(__arm__) || defined(__arm64) || defined(__thumb__) || \
-    defined(_M_ARM64) || defined(__aarch64__) || defined(__AARCH64EL__) || \
-    defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || \
-    defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || \
-    defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) || \
-    defined(__ARM_ARCH_6KZ__) || defined(__ARM_ARCH_6T2__) || \
-    defined(__ARM_ARCH_5TE__) || defined(__ARM_ARCH_5TEJ__) || \
-    defined(__ARM_ARCH_4T__) || defined(__ARM_ARCH_4__)
+#if defined(_is_arm_)
 char *get_gpu()
 {
     char *s = malloc(BUFFER256);
     snprintf(s, BUFFER256, "%s iGPU", get_sysctlbyname_info_str(CPU));
     return s;
 }
-#endif
-
-#if defined(__ia64__) || defined(_IA64) || \
-    defined(__IA64__) || defined(__ia64) || \
-    defined(_M_IA64) || defined(__itanium__) || \
-    defined(__powerpc) || defined(__powerpc__) || \
-    defined(__POWERPC__) || defined(__ppc__) || \
-    defined(_M_PPC) || defined(_ARCH_PPC) || \
-    defined(__PPCGECKO__) || defined(__PPCBROADWAY__) || \
-    defined(_XENON)
+#else
 char *get_gpu()
 {
         CFMutableDictionaryRef matchDict = IOServiceMatching("IOPCIDevice");

@@ -19,6 +19,12 @@ char            *get_colors1(void),
                 *hostname_underline(void),
                 *get_user_and_host(void);
 
+char            **get_cached_value(void);
+
+static char     *cache_file_path(void);
+
+int             check_cache_file(_Bool);
+
 typedef unsigned long ulong;
 
 #define COUNT(x) (uint)(sizeof x / sizeof *x)
@@ -29,21 +35,21 @@ typedef unsigned long ulong;
 #define CONFIG \
 { \
     /* name            function             cached */\
-    { "",             get_user_and_host,    false }, \
-    { "",             hostname_underline,   false }, \
-	{ "Shell: ",      get_shell,            false }, \
-	{ "OS: ",		  complete_os,          false }, \
-	{ "Kernel: ",     get_kernel,           false }, \
-    { "Machine: ",    get_machine,          false }, \
+    { "",             get_user_and_host,    true }, \
+    { "",             hostname_underline,   true }, \
+	{ "Shell: ",      get_shell,            true }, \
+	{ "OS: ",		  complete_os,          true }, \
+	{ "Kernel: ",     get_kernel,           true }, \
+    { "Machine: ",    get_machine,          true }, \
 	{ "Uptime: ",     get_uptime,           false }, \
-	{ "Resolution: ", get_resolution,       false }, \
+	{ "Resolution: ", get_resolution,       true }, \
 	{ "Terminal: ",   get_terminal,         false }, \
 	{ "RAM: ", 		  get_ram_usage,		false }, \
-	{ "CPU: ",        get_cpu,              false }, \
-	{ "GPU: ",        get_gpu,              false }, \
+	{ "CPU: ",        get_cpu,              true }, \
+	{ "GPU: ",        get_gpu,              true }, \
 	SPACER \
-	{ "",             get_colors1,          false }, \
-	{ "",             get_colors2,          false }, \
+	{ "",             get_colors1,          true }, \
+	{ "",             get_colors2,          true }, \
 }
 
 

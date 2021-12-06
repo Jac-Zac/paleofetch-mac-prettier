@@ -1,3 +1,7 @@
+### v0.4 - 2021-12-5
+* Added Caching
+* Tried to simplify code when possible.
+
 ### v0.3b - 2021-11-27
 * merge get_sysctl_info_int and get_sysctl_info_str into one.
 * fixed date printing two spaces, when minutes are equal to zero.

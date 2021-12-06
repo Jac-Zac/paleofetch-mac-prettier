@@ -2,7 +2,7 @@
 
 A rewrite of [neofetch](https://github.com/dylanaraps/neofetch) in C started by [ss7m for linux](https://github.com/ss7m/paleofetch).
 
-Not much code was left, but name is beautiful.
+Not much code was left, but name is beautiful and similar logic.
 
 ## IMPORTANT
 
@@ -16,17 +16,15 @@ At least for now paleofetch execution time is around 0.05s while neofetch will e
 
 The plan is to support all BSDs(FreeBSD, NetBSD, OpenBSD, maybe Dragonfly), but for now only macOS.
 
-![example outpur](.gitlab/example.png)
+![example output](.gitlab/example.png)
 
 ## Dependencies
 
-Having a Mac, or one of the BSDs, you could be very helpful.
+Having a Mac, or one of the BSDs installed, you could be very helpful.
 
 ## Compiling
 
-Enter folder and type `make file` or `make`
-
-If you don't have it just type `clang src/paleofetch.c -o paleofetch  -framework Cocoa -framework IOKit`
+Enter folder and type `make file` or `make` (can be bmake also)
 
 There is also option `make clean` to clean and `make dump` to make assembly code for debuging
 

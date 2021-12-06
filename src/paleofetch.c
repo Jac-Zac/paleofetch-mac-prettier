@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <sys/sysctl.h>
 
 #include "paleofetch.h"
 #include "sysctl_info.h"
@@ -53,7 +54,7 @@ char *get_colors2() {
 char *get_uptime()
 {
         struct timeval boottime;
-        size_t len = sizeof(boottime);
+        size_t len = sizeof(struct timeval);
         int mib[2] = {CTL_KERN, KERN_BOOTTIME};
         int err = sysctl(mib, 2, &boottime, &len, NULL, 0);
         if (err != 0){
@@ -84,21 +85,20 @@ char *get_uptime()
 }
 char *get_shell()
 {
-        char *shell      = malloc(BUFFER256);
-        char *shell_path = getenv("SHELL");
-        uint len = (uint) strlen(shell_path);
-        //Remove path
-        while(shell_path[len] != '/')
+        char *shell = getenv("SHELL");
+        //Push pointer at the end
+        shell += strlen(shell);
+        //Remove full path, pointer -1, so "/" isn't included
+        while(*(shell-1) != '/')
         {
-                shell = &shell_path[len];
-                len--;
+                shell--;
         }
         return shell;
 }
 char *hostname_underline()
 {
         // Composing username@hostname second time,
-        // to properly calculate string lenght without ESC chars etc
+        // to properly calculate string lenght without ESC chars
     
         char *userhost     = malloc(BUFFER256);
         size_t string_size = BUFFER256;
@@ -106,12 +106,13 @@ char *hostname_underline()
         size_t underline = strlen(userhost) * sizeof(char);
         free(userhost);
         char *ret_string = malloc(underline);
-        uint i = 0;
-        for(;i < underline; i++)
+        char *s = ret_string;
+        for(int i = 0; i < (int)underline; i++)
         {
-                ret_string[i] = '-';
+                *s = '-';
+                s++;
         }
-        ret_string[i] = '\0';
+        *s = '\0';
         return ret_string;
 }
 /* int check_for_pkg_info()
@@ -153,16 +154,54 @@ char *hostname_underline()
         snprintf(userhost, BUFFER256, "%s%s%s%s%s", "\033[1m", getenv("USER"), "\033[0m@\033[1m", details.nodename, "\033[0m");
         return userhost;
 }
-/* void cache info()
+static char *cache_file_path(){
+        char *path = malloc(BUFFER256);
+        if(getenv("XDG_CACHE_HOME")){
+            snprintf(path, BUFFER256, "%s/.cache/paleofetch", getenv("HOME"));
+        }
+        else {
+            snprintf(path, BUFFER256, "%s/.paleofetch", getenv("HOME"));
+        }
+        return path;
+}
+int check_cache_file(_Bool recache)
 {
         FILE *cache_file;
-        if(cache_file = fopen("~/.cache/paleofetch", "r")!=NULL)
+        if(fopen(cache_file_path(), "r") == NULL || recache == true)
+        {   
+            cache_file = fopen(cache_file_path(), "w"); 
+            if(cache_file == NULL)
+                return 1;
+            for(uint i = 0; i < COUNT(config); i++){
+                fprintf(cache_file,"%s|", config[i].function());
+            }
+            fclose(cache_file);
         }
-        else
-        {
-                
-        }
-}*/
+        return 0;
+}
+char **get_cached_value(){
+    FILE *cache_file = fopen(cache_file_path(), "r");
+    if(cache_file == NULL){
+        return NULL;
+    }
+    char *file_ret = malloc(BUFFER512);
+    fgets(file_ret, 512, cache_file);
+    char *token;
+    char **list = malloc(COUNT(config)+1 * sizeof(char*));
+    char **list_cpy;
+    list_cpy = list;
+    token = strtok(file_ret, "|");
+    while(token != NULL){
+        *list_cpy = token;
+        token = strtok(NULL,"|");
+        list_cpy++;
+    }
+    list_cpy = list;
+    while(*list_cpy != NULL){
+        list_cpy++;
+    }
+    return list; 
+}
 char *get_cpu(){
     return get_sysctlbyname_info_str(CPU);
 }
@@ -175,14 +214,21 @@ char *spacer(){
 char *get_machine(){
     return get_sysctl_info(CTL_HW, HW_MODEL);
 }
-int main()
+int main(int argc, char **argv)
 {       
+        
         int ret = uname(&details);
-
-        uint logo_size = sizeof logo / sizeof *logo;
-        uint config_size = sizeof config / sizeof *config;
+        uint logo_size = COUNT(logo);
+        uint config_size = COUNT(config);
         //sets which size we should base our iteration on, logo size or info size.
         uint which_bigger = logo_size > config_size ? logo_size : config_size;
+        if(argv[1] != NULL) {
+            check_cache_file(true);
+        }    
+        else{ 
+            check_cache_file(false);
+        }
+        char **cached_list = get_cached_value();
 
         for(uint i = 0; i < which_bigger; i++)
         {
@@ -192,16 +238,30 @@ int main()
             }
             // If we run out of logo, but we have still info to print, we will have to 
             // print spaces corresponding to logos width, and then print our info.
-            else if( i >= COUNT(logo) && i <= COUNT(config)) {
-                for(int j = 0; j < logo_line_lenght; j++){
-                    printf("%c",' ');
+            else {
+                if( i >= COUNT(logo) && i <= COUNT(config)) {
+                    for(int j = 0; j < logo_line_lenght; j++){
+                        printf("%c",' ');
+                    }
+                    printf("\033[1m%s\033[0m",config[i].label);
+                    if(config[i].cached == true && cached_list[i] != NULL){
+                        printf("%s", cached_list[i]);
+                    }
+                    else{
+                        printf("%s", config[i].function());
+                    }
                 }
-                printf("\033[1m%s\033[0m%s" , config[i].label, config[i].function());
-            }
-            // The only option left is that we have both info and logo to print.
-            else { 
-                printf("%s\033[0m ", logo[i]);
-                printf("\033[1m%s\033[0m%s" , config[i].label, config[i].function());
+                // The only option left is that we have both info and logo to print.
+                else { 
+                    printf("%s\033[0m ", logo[i]);
+                    printf("\033[1m%s\033[0m",config[i].label);
+                    if(config[i].cached == true && cached_list[i] != NULL){
+                        printf("%s", cached_list[i]);
+                    }
+                    else {
+                        printf("%s", config[i].function());
+                    }
+                }
             }
             puts("");
         }

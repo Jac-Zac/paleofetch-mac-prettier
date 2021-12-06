@@ -20,7 +20,7 @@ const char *logo[] =
 "\033[38;5;45;1m    kMMMMMMMMMMMMMMMMMMMMMMd   ",
 "\033[38;5;45;1m     ;KMMMMMMMWXXWMMMMMMMk.    ",
 "\033[38;5;45;1m       .cooc,.    .,coo:.      ",
-"\033[0m                               "
+"                               "
 };
 
 #endif

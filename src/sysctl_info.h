@@ -1,3 +1,10 @@
+//
+//  sysctl_info.h 
+//  paleofetch-mac
+//
+//  Created by DesantBucie on 14/11/2021.
+//
+
 #ifndef SYSCTL_INFO_H
 #define SYSCTL_INFO_H
 
