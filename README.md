@@ -22,6 +22,10 @@ The plan is to support all BSDs(FreeBSD, NetBSD, OpenBSD, maybe Dragonfly), but 
 
 Having a Mac, or one of the BSDs installed, you could be very helpful.
 
+## Recaching
+
+Paleofetch uses caching to run faster. To recache data run `paleofetch -r`
+
 ## Compiling
 
 Enter folder and type `make file` or `make` (can be bmake also)

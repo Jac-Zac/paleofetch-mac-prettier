@@ -85,14 +85,19 @@ char *get_uptime()
 }
 char *get_shell()
 {
-        char *shell = getenv("SHELL");
-        //Push pointer at the end
-        shell += strlen(shell);
-        //Remove full path, pointer -1, so "/" isn't included
-        while(*(shell-1) != '/')
-        {
-                shell--;
+        char *shell_path = getenv("SHELL");
+        // Manual says, don't touch original pointer
+        char *s = shell_path;
+        char *shell = malloc(BUFFER32);
+
+        if(shell_path == NULL){
+            strcpy(shell,"Unknown");
+            return shell;
         }
+        //After last '/' there will be name of the shell
+        s = strrchr(s,'/'); 
+        s++;
+        strlcpy(shell,s, BUFFER32);
         return shell;
 }
 char *hostname_underline()
@@ -185,20 +190,19 @@ char **get_cached_value(){
         return NULL;
     }
     char *file_ret = malloc(BUFFER512);
-    fgets(file_ret, 512, cache_file);
+    fgets(file_ret, BUFFER512, cache_file);
     char *token;
     char **list = malloc(COUNT(config)+1 * sizeof(char*));
-    char **list_cpy;
-    list_cpy = list;
+    char **list_ptr = list;
     token = strtok(file_ret, "|");
     while(token != NULL){
-        *list_cpy = token;
+        *list_ptr = token;
         token = strtok(NULL,"|");
-        list_cpy++;
+        list_ptr++;
     }
-    list_cpy = list;
-    while(*list_cpy != NULL){
-        list_cpy++;
+    list_ptr = list;
+    while(*list_ptr != NULL){
+        list_ptr++;
     }
     return list; 
 }

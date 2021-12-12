@@ -94,7 +94,7 @@ char *get_resolution()
 char *get_gpu()
 {
     char *s = malloc(BUFFER256);
-    snprintf(s, BUFFER256, "%s iGPU", get_sysctlbyname_info_str(CPU));
+    snprintf(s, BUFFER256, "%s SoC GPU", get_sysctlbyname_info_str(CPU));
     return s;
 }
 #else
