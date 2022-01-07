@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <sys/_types/_size_t.h>
 #include <sys/sysctl.h>
 
 #include "paleofetch.h"
@@ -27,7 +28,7 @@ struct conf {
 } config[] = CONFIG;
 
 char *get_colors1() {
-    char *colors1 = malloc(BUFFER512);
+    char *const colors1 = malloc(BUFFER512);
     char *s = colors1;
 
     for(int i = 0; i < 8; i++) {
@@ -40,7 +41,7 @@ char *get_colors1() {
 }
 
 char *get_colors2() {
-    char *colors2 = malloc(BUFFER512);
+    char *const colors2 = malloc(BUFFER512);
     char *s = colors2;
 
     for(int i = 8; i < 16; i++) {
@@ -61,16 +62,16 @@ char *get_uptime()
             halt_and_catch_fire("sysctl error", EXIT_FAILURE);
         }
 
-        time_t bsec = boottime.tv_sec, csec = time(NULL);
-        float time = difftime(csec, bsec) / 60;
-        uint days = time / (60 * 24);
-        uint hours = (uint)(time / 60) % 24;
-        uint minutes = (uint)time % 60;
+        time_t const bsec = boottime.tv_sec, csec = time(NULL);
+        float const time = difftime(csec, bsec) / 60;
+        uint const days = time / (60 * 24);
+        uint const hours = (uint)(time / 60) % 24;
+        uint const minutes = (uint)time % 60;
 
-        char *ret_string = malloc(BUFFER64);
-        char *days_string = malloc(BUFFER64);
-        char *hours_string = malloc(BUFFER64);
-        char *minutes_string = malloc(BUFFER64);
+        char *const ret_string = malloc(BUFFER64);
+        char *const days_string = malloc(BUFFER64);
+        char *const hours_string = malloc(BUFFER64);
+        char *const minutes_string = malloc(BUFFER64);
         if(days > 0)
             snprintf(days_string, BUFFER64, "%u %s", days, (days > 1 ? "days " : "day "));
         if(hours > 0)
@@ -85,10 +86,10 @@ char *get_uptime()
 }
 char *get_shell()
 {
-        char *shell_path = getenv("SHELL");
+        char *const shell_path = getenv("SHELL");
         // Manual says, don't touch original pointer
         char *s = shell_path;
-        char *shell = malloc(BUFFER32);
+        char *const shell = malloc(BUFFER32);
 
         if(shell_path == NULL){
             strcpy(shell,"Unknown");
@@ -105,14 +106,15 @@ char *hostname_underline()
         // Composing username@hostname second time,
         // to properly calculate string lenght without ESC chars
     
-        char *userhost     = malloc(BUFFER256);
-        size_t string_size = BUFFER256;
+        char *const userhost     = malloc(BUFFER256);
+        size_t const string_size = BUFFER256;
         snprintf(userhost, string_size, "%s%c%s", getenv("USER"), '@', details.nodename);
-        size_t underline = strlen(userhost) * sizeof(char);
+        size_t const underline = strlen(userhost) * sizeof(char);
         free(userhost);
-        char *ret_string = malloc(underline);
+
+        char *const ret_string = malloc(underline);
         char *s = ret_string;
-        for(int i = 0; i < (int)underline; i++)
+        for(size_t i = 0; i < underline; i++)
         {
                 *s = '-';
                 s++;
@@ -155,12 +157,12 @@ char *hostname_underline()
 */
  char *get_user_and_host()
 {
-        char *userhost = malloc(BUFFER256);;
+        char *const userhost = malloc(BUFFER256);;
         snprintf(userhost, BUFFER256, "%s%s%s%s%s", "\033[1m", getenv("USER"), "\033[0m@\033[1m", details.nodename, "\033[0m");
         return userhost;
 }
 static char *cache_file_path(){
-        char *path = malloc(BUFFER256);
+        char *const path = malloc(BUFFER256);
         if(getenv("XDG_CACHE_HOME")){
             snprintf(path, BUFFER256, "%s/.cache/paleofetch", getenv("HOME"));
         }
@@ -169,7 +171,7 @@ static char *cache_file_path(){
         }
         return path;
 }
-int check_cache_file(_Bool recache)
+int check_cache_file(_Bool const recache)
 {
         FILE *cache_file;
         if(fopen(cache_file_path(), "r") == NULL || recache == true)
@@ -185,14 +187,14 @@ int check_cache_file(_Bool recache)
         return 0;
 }
 char **get_cached_value(){
-    FILE *cache_file = fopen(cache_file_path(), "r");
+    FILE *const cache_file = fopen(cache_file_path(), "r");
     if(cache_file == NULL){
         return NULL;
     }
-    char *file_ret = malloc(BUFFER512);
+    char *const file_ret = malloc(BUFFER512);
     fgets(file_ret, BUFFER512, cache_file);
     char *token;
-    char **list = malloc(COUNT(config)+1 * sizeof(char*));
+    char **const list = malloc(COUNT(config)+1 * sizeof(char*));
     char **list_ptr = list;
     token = strtok(file_ret, "|");
     while(token != NULL){
@@ -221,9 +223,9 @@ char *get_machine(){
 int main(int argc, char **argv)
 {       
         
-        int ret = uname(&details);
-        uint logo_size = COUNT(logo);
-        uint config_size = COUNT(config);
+        int const ret = uname(&details);
+        uint const logo_size = COUNT(logo);
+        uint const config_size = COUNT(config);
         //sets which size we should base our iteration on, logo size or info size.
         uint which_bigger = logo_size > config_size ? logo_size : config_size;
         if(argv[1] != NULL) {
@@ -232,7 +234,7 @@ int main(int argc, char **argv)
         else{ 
             check_cache_file(false);
         }
-        char **cached_list = get_cached_value();
+        char **const cached_list = get_cached_value();
 
         for(uint i = 0; i < which_bigger; i++)
         {

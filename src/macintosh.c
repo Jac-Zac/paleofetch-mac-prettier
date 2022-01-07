@@ -16,12 +16,12 @@
 
 #define OS_VERS "kern.osproductversion"
 
-char *pgmname;
+char *const pgmname;
 
-char *get_os_name(const char *cmd)
+char *get_os_name(char const *const cmd)
 {
-        FILE *stdout_file = popen(cmd, "r");
-        char *os_name = malloc(8);
+        FILE *const stdout_file = popen(cmd, "r");
+        char *const os_name = malloc(8);
         if (stdout_file)
         {
                 fgets(os_name, 8, stdout_file);
@@ -40,7 +40,7 @@ char *get_os_name(const char *cmd)
 }
 char *get_kernel()
 {
-        char *kernel = malloc(BUFFER64);
+        char *const kernel = malloc(BUFFER64);
         strlcpy(kernel, "Darwin ", BUFFER64);
         strlcat(kernel, details.release, BUFFER64);
         return kernel;
@@ -49,15 +49,15 @@ char *get_kernel()
 uint64_t get_mem_from_vm_stat()
 {
         mach_port_t myHost;
-        vm_statistics64_data_t vm_stat;
+        vm_statistics64_data_t const vm_stat;
         myHost = mach_host_self();
-        unsigned int count = HOST_VM_INFO64_COUNT;
+        uint count = HOST_VM_INFO64_COUNT;
         kern_return_t ret;
         if ((ret = host_statistics64(myHost, HOST_VM_INFO64, (host_info64_t)&vm_stat, &count) != KERN_SUCCESS)) {
             fprintf(stderr, "%s: failed to get statistics. error %d\n", pgmname, ret);
             exit(EXIT_FAILURE);
         }
-        uint pagesize = (mach_vm_size_t)vm_kernel_page_size;
+        uint const pagesize = (mach_vm_size_t)vm_kernel_page_size;
         uint64_t total = (uint64_t) (vm_stat.compressor_page_count + vm_stat.wire_count + vm_stat.active_count + vm_stat.speculative_count);
         total *= pagesize;
         total >>= 20;
@@ -66,34 +66,34 @@ uint64_t get_mem_from_vm_stat()
 
 char *get_ram_usage()
 {
-        int64_t *ram_size =(int64_t *)get_sysctl_info(CTL_HW, HW_MEMSIZE);
-        uint ram_size_short = ram_size[0] >> 20;
-        uint64_t used_memory = get_mem_from_vm_stat();
-        char *ram_usage = malloc(BUFFER64);
+        int64_t *const ram_size =(int64_t *)get_sysctl_info(CTL_HW, HW_MEMSIZE);
+        uint const ram_size_short = ram_size[0] >> 20;
+        uint64_t const used_memory = get_mem_from_vm_stat();
+        char *const ram_usage = malloc(BUFFER64);
         snprintf(ram_usage, BUFFER64, "%lluMB/%dMB %c%llu%s",
                 used_memory, ram_size_short, '(', used_memory * 100/(ram_size_short != 0 ? ram_size_short : 1) , "%)");
         return ram_usage;
 }
 char *complete_os()
 {
-        char *cmd_build = "sw_vers -buildVersion";
-        char *cmd_name  = "sw_vers -productName";
-        char *os        = malloc(BUFFER256);
+        char const *const cmd_build = "sw_vers -buildVersion";
+        char const *const cmd_name  = "sw_vers -productName";
+        char *const os              = malloc(BUFFER256);
         sprintf(os, "%s %s %s %s", get_os_name(cmd_name), get_sysctlbyname_info_str(OS_VERS), get_os_name(cmd_build), details.machine);
         return os;
 }
 char *get_resolution()
 {
-        uint screen_width = CGDisplayPixelsWide(CGMainDisplayID());
-        uint screen_height = CGDisplayPixelsHigh(CGMainDisplayID());
-        char *resolution = malloc(BUFFER64);
+        uint const screen_width = CGDisplayPixelsWide(CGMainDisplayID());
+        uint const screen_height = CGDisplayPixelsHigh(CGMainDisplayID());
+        char *const resolution = malloc(BUFFER64);
         snprintf(resolution, BUFFER64, "%u%c%u", screen_width, 'x', screen_height);
         return resolution;
 }
 #if defined(_is_arm_)
 char *get_gpu()
 {
-    char *s = malloc(BUFFER256);
+    char *const s = malloc(BUFFER256);
     snprintf(s, BUFFER256, "%s SoC GPU", get_sysctlbyname_info_str(CPU));
     return s;
 }

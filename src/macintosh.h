@@ -8,7 +8,7 @@
 #define MACINTOSH_H
 #include <stdint.h>
 
-char        *get_os_name(const char*),
+char        *get_os_name(char const *const),
             *get_ram_usage(void),
             *get_kernel(void),
             *complete_os(void),

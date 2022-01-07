@@ -34,7 +34,7 @@
         } while(0)
 
 struct utsname details;
-void *get_sysctl_info(const int, const int);
+void *get_sysctl_info(int const, int const);
 
-char *get_sysctlbyname_info_str(const char*);  
+char *get_sysctlbyname_info_str(char const *const);  
 #endif // SYSCTL_INFO_H
