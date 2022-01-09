@@ -13,7 +13,8 @@ char        *get_os_name(char const *const),
             *get_kernel(void),
             *complete_os(void),
             *get_resolution(void),
-            *get_gpu(void);
+            *get_gpu(void),
+            *get_battery_procentage(void);
 
 uint64_t get_mem_from_vm_stat();
 
@@ -30,15 +31,20 @@ uint64_t get_mem_from_vm_stat();
     defined(__ARM_ARCH_4T__) || defined(__ARM_ARCH_4__)
 #define _is_arm_
 #elif \
-    defined(__ia64__) || defined(_IA64) || \
-    defined(__IA64__) || defined(__ia64) || \
-    defined(_M_IA64) || defined(__itanium__) || \
-    defined(__powerpc) || defined(__powerpc__) || \
-    defined(__POWERPC__) || defined(__ppc__) || \
-    defined(_M_PPC) || defined(_ARCH_PPC) || \
-    defined(__PPCGECKO__) || defined(__PPCBROADWAY__) || \
-    defined(_XENON)
-#define _is_ppc_or_intel_
-#endif 
+    defined(__x86_64) || defined(__x86_64__) || \
+    defined(__amd64__) || defined(__amd64) || \
+    defined(_M_X64) 
+#define _is_x86_64_
+#elif \
+    defined(i386) || defined(__i386__) \
+    defined(__i486__) || defined(__i568__) \
+    defined(__i686__) || defined(__i386) \
+    defined(_M_IX86) || defined(_X86_) \
+    defined(__THW_INTEL__) || defined(__I86__) \
+    defined(__INTEL__)
+#define _is_x86
+#else 
+#define _is_ppc_
+#endif  
 
 #endif //MACINTOSH_H

@@ -28,27 +28,27 @@ struct conf {
 } config[] = CONFIG;
 
 char *get_colors1() {
-    char *const colors1 = malloc(BUFFER512);
+    char *const colors1 = malloc_s(BUFFER512);
     char *s = colors1;
 
     for(int i = 0; i < 8; i++) {
         sprintf(s, "\033[4%dm   ", i);
         s += 8;
     }
-    snprintf(s, 5, "\033[0m");
+    strlcat(s, "\033[0m", 5);
 
     return colors1;
 }
 
 char *get_colors2() {
-    char *const colors2 = malloc(BUFFER512);
+    char *const colors2 = malloc_s(BUFFER512);
     char *s = colors2;
 
     for(int i = 8; i < 16; i++) {
         sprintf(s, "\033[48;5;%dm   ", i);
         s += 12 + (i >= 10 ? 1 : 0);
     }
-    snprintf(s, 5, "\033[0m");
+    strlcat(s,"\033[0m", 5);
 
     return colors2;
 }
@@ -68,10 +68,10 @@ char *get_uptime()
         uint const hours = (uint)(time / 60) % 24;
         uint const minutes = (uint)time % 60;
 
-        char *const ret_string = malloc(BUFFER64);
-        char *const days_string = malloc(BUFFER64);
-        char *const hours_string = malloc(BUFFER64);
-        char *const minutes_string = malloc(BUFFER64);
+        char *const ret_string = malloc_s(BUFFER64);
+        char *days_string = malloc_s(BUFFER64);
+        char *hours_string = malloc_s(BUFFER64);
+        char *minutes_string = malloc_s(BUFFER64);
         if(days > 0)
             snprintf(days_string, BUFFER64, "%u %s", days, (days > 1 ? "days " : "day "));
         if(hours > 0)
@@ -81,6 +81,7 @@ char *get_uptime()
         snprintf(ret_string, BUFFER64 , "%s%s%s", days_string, hours_string, minutes_string);
         
         free(days_string); free(hours_string); free(minutes_string);
+        days_string = NULL; hours_string = NULL; minutes_string = NULL;
         
         return ret_string;    
 }
@@ -89,7 +90,7 @@ char *get_shell()
         char *const shell_path = getenv("SHELL");
         // Manual says, don't touch original pointer
         char *s = shell_path;
-        char *const shell = malloc(BUFFER32);
+        char *const shell = malloc_s(8 * sizeof(char));
 
         if(shell_path == NULL){
             strcpy(shell,"Unknown");
@@ -98,7 +99,7 @@ char *get_shell()
         //After last '/' there will be name of the shell
         s = strrchr(s,'/'); 
         s++;
-        strlcpy(shell,s, BUFFER32);
+        strlcpy(shell,s, 8);
         return shell;
 }
 char *hostname_underline()
@@ -106,13 +107,15 @@ char *hostname_underline()
         // Composing username@hostname second time,
         // to properly calculate string lenght without ESC chars
     
-        char *const userhost     = malloc(BUFFER256);
+        char *userhost           = malloc_s(BUFFER256);
         size_t const string_size = BUFFER256;
-        snprintf(userhost, string_size, "%s%c%s", getenv("USER"), '@', details.nodename);
-        size_t const underline = strlen(userhost) * sizeof(char);
-        free(userhost);
 
-        char *const ret_string = malloc(underline);
+        snprintf(userhost, string_size, "%s%c%s", getenv("USER"), '@', details.nodename);
+        size_t const underline = strlen(userhost) * sizeof(char); // \0 already included
+        free(userhost);
+        userhost = NULL;
+
+        char *const ret_string = malloc_s(underline);
         char *s = ret_string;
         for(size_t i = 0; i < underline; i++)
         {
@@ -129,7 +132,7 @@ char *hostname_underline()
         {
                 char *cmd = "pkg_info | wc -l";
                 FILE *stdout_file = popen(cmd, "r");
-                char *ret_str = malloc(BUFFER32);
+                char *ret_str = malloc_s(BUFFER32);
                 if (stdout_file)
                 {
                         fgets(ret_str, BUFFER32, stdout_file);
@@ -145,7 +148,7 @@ char *hostname_underline()
 }
  char *look_for_package_managers()
 {
-        char *packages = malloc(BUFFER256);
+        char *packages = malloc_s(BUFFER256);
         int number = check_for_pkg_info();
         if(number != 0)
         {
@@ -157,12 +160,12 @@ char *hostname_underline()
 */
  char *get_user_and_host()
 {
-        char *const userhost = malloc(BUFFER256);;
+        char *const userhost = malloc_s(BUFFER256);;
         snprintf(userhost, BUFFER256, "%s%s%s%s%s", "\033[1m", getenv("USER"), "\033[0m@\033[1m", details.nodename, "\033[0m");
         return userhost;
 }
-static char *cache_file_path(){
-        char *const path = malloc(BUFFER256);
+char *cache_file_path(){
+        char *const path = malloc_s(BUFFER256);
         if(getenv("XDG_CACHE_HOME")){
             snprintf(path, BUFFER256, "%s/.cache/paleofetch", getenv("HOME"));
         }
@@ -186,24 +189,21 @@ int check_cache_file(_Bool const recache)
         }
         return 0;
 }
-char **get_cached_value(){
+char **get_cached_value(char **file_ret){
     FILE *const cache_file = fopen(cache_file_path(), "r");
     if(cache_file == NULL){
         return NULL;
     }
-    char *const file_ret = malloc(BUFFER512);
-    fgets(file_ret, BUFFER512, cache_file);
+    *file_ret = malloc_s(BUFFER512);
+    fgets(*file_ret, BUFFER512, cache_file);
+    fclose(cache_file);
     char *token;
-    char **const list = malloc(COUNT(config)+1 * sizeof(char*));
+    char **const list = malloc_s(COUNT(config)+1 * sizeof(char*));
     char **list_ptr = list;
-    token = strtok(file_ret, "|");
+    token = strtok(*file_ret, "|");
     while(token != NULL){
         *list_ptr = token;
         token = strtok(NULL,"|");
-        list_ptr++;
-    }
-    list_ptr = list;
-    while(*list_ptr != NULL){
         list_ptr++;
     }
     return list; 
@@ -212,10 +212,18 @@ char *get_cpu(){
     return get_sysctlbyname_info_str(CPU);
 }
 char *get_terminal(){
-    return getenv("TERM_PROGRAM");
+    char *terminal = malloc_s(BUFFER256);
+    if(getenv("TERM_PROGRAM") == NULL){
+        strcpy(terminal, "Unknown");
+        return terminal;
+    }
+    strlcpy(terminal, getenv("TERM_PROGRAM"), BUFFER256);
+    return terminal;
 }
 char *spacer(){
-    return " ";
+    char *spacer = malloc_s(2);
+    strcpy(spacer, " ");
+    return spacer;
 }
 char *get_machine(){
     return get_sysctl_info(CTL_HW, HW_MODEL);
@@ -227,14 +235,15 @@ int main(int argc, char **argv)
         uint const logo_size = COUNT(logo);
         uint const config_size = COUNT(config);
         //sets which size we should base our iteration on, logo size or info size.
-        uint which_bigger = logo_size > config_size ? logo_size : config_size;
+        uint const which_bigger = logo_size > config_size ? logo_size : config_size;
         if(argv[1] != NULL) {
             check_cache_file(true);
         }    
         else{ 
             check_cache_file(false);
         }
-        char **const cached_list = get_cached_value();
+        char *file_ret; // This is done, so we can free memory that we use for cache;
+        char **cached_list = get_cached_value(&file_ret);
 
         for(uint i = 0; i < which_bigger; i++)
         {
@@ -255,6 +264,8 @@ int main(int argc, char **argv)
                     }
                     else{
                         printf("%s", config[i].function());
+                        free(config[i].function()); // All of functions need to be dynamically allocated, or program will crash
+                        // Possible solution, add bool is_freeable to struct, and check;
                     }
                 }
                 // The only option left is that we have both info and logo to print.
@@ -266,11 +277,14 @@ int main(int argc, char **argv)
                     }
                     else {
                         printf("%s", config[i].function());
+                        free(config[i].function()); // All of functions need to be dynamically allocated, or program will crash
                     }
                 }
             }
             puts("");
         }
+        free(file_ret);
+        free(cached_list);
         return ret;
 }
 

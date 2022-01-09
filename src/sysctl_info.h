@@ -34,7 +34,8 @@
         } while(0)
 
 struct utsname details;
-void *get_sysctl_info(int const, int const);
+void *get_sysctl_info(int const, int const),
+     *malloc_s(size_t const);
 
 char *get_sysctlbyname_info_str(char const *const);  
 #endif // SYSCTL_INFO_H

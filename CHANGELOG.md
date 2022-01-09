@@ -1,4 +1,9 @@
-### v0.4 - 2021-12-5
+### v0.5 - 2022-01-09
+* Fixed many possible memory leaks(memory is now freed)
+* Added battery procentage for mac, but still problematic, for unknown reason
+* Added malloc\_s which tries three times allocating if ptr = NULL, if not possible exits. 
+
+### v0.4 - 2021-12-05
 * Added Caching
 * Tried to simplify code when possible.
 
@@ -33,7 +38,6 @@
 * Fixed reading memory, finally logo is printed.
 
 ### v0.1b - 2021-04-14
-
 * Implemented faster getting stats from vm.
 
 ### v0.1a - 2021-04-12
