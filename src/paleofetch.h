@@ -8,20 +8,19 @@
 #ifndef PALEOFETCH_H
 #define PALEOFETCH_H
 
-char            *get_colors1(void),
-                *get_colors2(void),
-                *get_uptime(void),
-                *get_shell(void),
-                *get_cpu(void),
-                *get_terminal(void),
-                *get_machine(void),
-                *spacer(void),
-                *hostname_underline(void),
-                *get_user_and_host(void);
+void            get_colors1(char *),
+                get_colors2(char *),
+                get_uptime(char *),
+                get_shell(char *),
+                get_cpu(char *),
+                get_terminal(char *),
+                get_machine(char *),
+                spacer(char *),
+                hostname_underline(char *),
+                get_user_and_host(char *),
+                *cache_file_path(void);
 
 char            **get_cached_value(char **);
-
-char            *cache_file_path(void);
 
 int             check_cache_file(_Bool);
 
@@ -31,27 +30,6 @@ typedef unsigned long ulong;
 #define SPACER {"", spacer, false},
 //#define REMOVE(A) { (A), NULL, sizeof(A) - 1 , 0 }
 //#define REPLACE(A, B) { (A), (B), sizeof(A) - 1, sizeof(B) - 1 }
-
-#define CONFIG \
-{ \
-    /* name            function             cached       freeable?     */\
-    { "",             get_user_and_host,        true  }, \
-    { "",             hostname_underline,       true  }, \
-	{ "Shell: ",      get_shell,                true  }, \
-	{ "OS: ",		  complete_os,              true  }, \
-	{ "Kernel: ",     get_kernel,               true  }, \
-    { "Machine: ",    get_machine,              true  }, \
-	{ "Uptime: ",     get_uptime,               false }, \
-	{ "Resolution: ", get_resolution,           true  }, \
-	{ "Terminal: ",   get_terminal,             false }, \
-    /* 1:50 times, malloc heap crashes { "Battery: ",    get_battery_procentage,   false },*/ \
-	{ "RAM: ", 		  get_ram_usage,		    false }, \
-	{ "CPU: ",        get_cpu,                  true  }, \
-	{ "GPU: ",        get_gpu,                  true  }, \
-	SPACER \
-	{ "",             get_colors1,              true  }, \
-	{ "",             get_colors2,              true  }, \
-}
 
 
 /*#define CPU_CONFIG \

@@ -1,12 +1,12 @@
 # paleofetch-bsd
 
-A rewrite of [neofetch](https://github.com/dylanaraps/neofetch) in C started by [ss7m for linux](https://github.com/ss7m/paleofetch).
+A rewrite of [neofetch](https://github.com/dylanaraps/neofetch) started by [ss7m for linux](https://github.com/ss7m/paleofetch).
 
 Not much code was left, but name is beautiful and similar logic.
 
 ## IMPORTANT
 
-This is developed on M1 arm64. It should work on x86_64, but mistakes may happen. No support for powerpc, but maybe will add it.
+This is developed on M1 arm64. It should work on x86_64, if not make an issue. No support for powerpc, but maybe will add it.
 
 ## Why use paleofetch over neofetch?
 
@@ -28,7 +28,7 @@ Paleofetch uses caching to run faster. To recache data run `paleofetch -r`
 
 ## Compiling
 
-Enter folder and type `make file` or `make` (can be bmake also)
+Enter folder and type `make` (can be bmake, gnumake also)
 
 There is also option `make clean` to clean and `make dump` to make assembly code for debuging
 

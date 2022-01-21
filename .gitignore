@@ -3,3 +3,5 @@ paleofetch
 a.out
 **/.DS_Store
 .DS_Store
+*.o
+*.dSYM

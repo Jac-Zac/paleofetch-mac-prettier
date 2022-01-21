@@ -23,6 +23,10 @@ char *get_sysctlbyname_info_str(char const *const input)
         }
         return sysctl_info;
 }
+void free_s(void *ptr){
+    if(ptr != NULL)
+        free(ptr);
+}
 void *malloc_s(size_t const size)
 {
     int i = 0;

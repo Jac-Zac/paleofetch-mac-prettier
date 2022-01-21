@@ -1,3 +1,9 @@
+### v0.5a - 2022-01-20
+* Removed many unnecessary allocations, instead copying function results to one String located in main
+* Some work is being done to support IOKit calls more easily, but M1 seems different than Intel mac version(some headers are missing).
+* battery on by default
+* trying to make portable makefile, but if project grows this will be problematic
+
 ### v0.5 - 2022-01-09
 * Fixed many possible memory leaks(memory is now freed)
 * Added battery procentage for mac, but still problematic, for unknown reason
@@ -8,7 +14,7 @@
 * Tried to simplify code when possible.
 
 ### v0.3b - 2021-11-27
-* merge get_sysctl_info_int and get_sysctl_info_str into one.
+* merge get\_sysctl\_info\_int and get\_sysctl\_info\_str into one.
 * fixed date printing two spaces, when minutes are equal to zero.
 
 ### v0.3 - 2021-11-22

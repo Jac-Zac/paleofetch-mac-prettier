@@ -5,15 +5,14 @@
 //  Created by DesantBucie on 07/04/2021.
 //
 #include <IOKit/IOKitLib.h>
-
-#include <CoreFoundation/CoreFoundation.h>
-#include <CoreFoundation/CFDateFormatter.h>
-
+#include <Availability.h>
 #include <ApplicationServices/ApplicationServices.h>
 
 #include <mach/mach.h>
 #include <mach/vm_page_size.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "sysctl_info.h"
 #include "macintosh.h"
@@ -22,15 +21,17 @@
 
 char *const pgmname;
 
-char *get_os_name(char const *const cmd)
+char *execute_command(char const *const cmd)
 {
         FILE *stdout_file = popen(cmd, "r");
-        char *os_name = malloc_s(BUFFER256);
-        if(os_name == NULL)
-            return "Unknown";
+        char *os_name = malloc(BUFF_256);
+        if(os_name == NULL){
+            pclose(stdout_file);
+            halt_and_catch_fire("Malloc error", 127);
+        }
         if (stdout_file)
         {
-                fgets(os_name, BUFFER256, stdout_file);
+                fgets(os_name, BUFF_256, stdout_file);
                 pclose(stdout_file);
         }
         for (uint i = strlen(os_name); i != 0; i--)
@@ -44,13 +45,12 @@ char *get_os_name(char const *const cmd)
         return os_name;
 
 }
-char *get_kernel()
+void get_kernel(char *kernel)
 {
-        char *const kernel = malloc_s(BUFFER64);
-        strlcpy(kernel, "Darwin ", BUFFER64);
-        strlcat(kernel, details.release, BUFFER64);
-        return kernel;
-        
+        //char *const kernel = malloc_s(BUFF_64);
+        strlcpy(kernel, "Darwin ", BUFF_64);
+        strlcat(kernel, details.release, BUFF_64);
+        //return kernel;
 }
 uint64_t get_mem_from_vm_stat()
 {
@@ -69,98 +69,110 @@ uint64_t get_mem_from_vm_stat()
         total >>= 20;
         return total;
 }
-
-char *get_ram_usage()
+#if defined(_is_arm_) || defined(_is_x86_64_)
+void get_ram_usage(char *ram_usage)
 {
         int64_t *const ram_size =(int64_t *)get_sysctl_info(CTL_HW, HW_MEMSIZE);
         uint const ram_size_short = ram_size[0] >> 20;
         uint64_t const used_memory = get_mem_from_vm_stat();
-        char *const ram_usage = malloc_s(BUFFER64);
-        snprintf(ram_usage, BUFFER64, "%lluMB/%dMB %c%llu%s",
+        //char *const ram_usage = malloc_s(BUFF_64);
+        snprintf(ram_usage, BUFF_64, "%lluMB/%dMB %c%llu%s",
+                used_memory, ram_size_short, '(', used_memory * 100/(ram_size_short != 0 ? ram_size_short : 1) , "%)");
+        //return ram_usage;
+}
+#else
+char *get_ram_usage()
+{
+        uint32_t *const ram_size =(uint32_t *)get_sysctl_info(CTL_HW, HW_MEMSIZE);
+        uint const ram_size_short = ram_size[0] >> 20;
+        uint32_t const used_memory = get_mem_from_vm_stat();
+        char *const ram_usage = malloc_s(BUFF_64);
+        snprintf(ram_usage, BUFF_64, "%lluMB/%dMB %c%llu%s",
                 used_memory, ram_size_short, '(', used_memory * 100/(ram_size_short != 0 ? ram_size_short : 1) , "%)");
         return ram_usage;
 }
-char *complete_os()
+
+
+#endif
+void get_complete_os(char *os)
 {
-        char const *const cmd_build = "sw_vers -buildVersion";
-        char const *const cmd_name  = "sw_vers -productName";
-        char *const os              = malloc_s(BUFFER256);
-        char *build = get_os_name(cmd_name);
-        char *name = get_os_name(cmd_build);
-        sprintf(os, "%s %s %s %s", name, get_sysctlbyname_info_str(OS_VERS), build, details.machine);
-        free(name); free(build);
-        build = NULL; name = NULL;
-        return os;
+        char const cmd_build[] = "sw_vers -buildVersion";
+        char const cmd_name[]  = "sw_vers -productName";
+        char *build   = execute_command(cmd_build);
+        char *name    = execute_command(cmd_name);
+        char *version = get_sysctlbyname_info_str(OS_VERS);
+        sprintf(os, "%s %s %s %s", name, version, build, details.machine);
+        free(name); free(build); free(version);
+        build = NULL; name = NULL; version = NULL;
 }
-char *get_battery_procentage()
+void get_battery_procentage(char *battery_procentage)
 {
     char const cmd[] = "pmset -g batt | grep -Eo '\134d+\045'";
-    char *battery = get_os_name(cmd);
-    if(battery == NULL)
-        return "Unknown";
-    else
-        return battery;
+    char *battery = execute_command(cmd);
+    //char *battery = iokit_info("AppleSmartBattery");
+    if(battery == NULL){
+        strcpy(battery_procentage, "Unknown");
+        return;
+    }
+    strcpy(battery_procentage, battery);
 }
-char *get_resolution()
+void get_resolution(char *resolution)
 {
         uint const screen_width = CGDisplayPixelsWide(CGMainDisplayID());
         uint const screen_height = CGDisplayPixelsHigh(CGMainDisplayID());
-        char *const resolution = malloc_s(BUFFER64);
-        snprintf(resolution, BUFFER64, "%u%c%u", screen_width, 'x', screen_height);
-        return resolution;
+
+        snprintf(resolution, BUFF_64, "%u%c%u", screen_width, 'x', screen_height);
 }
 #if defined(_is_arm_)
-char *get_gpu()
+void get_gpu(char *s)
 {
-    char *const s = malloc_s(BUFFER256);
     char *cpu = get_sysctlbyname_info_str(CPU);
-    snprintf(s, BUFFER256, "%s SoC GPU", cpu);
+    snprintf(s, BUFF_256, "%s SoC GPU", cpu);
     free(cpu);
     cpu = NULL;
-    return s;
 }
 #else
-char *get_gpu()
+void get_gpu(char *gpu)
 {
-        CFMutableDictionaryRef matchDict = IOServiceMatching("IOPCIDevice");
+    char *gpu_name;
+    CFMutableDictionaryRef matchDict = IOServiceMatching("IOPCIDevice");
         
-        io_iterator_t iterator;
-        char *gpu_name; 
-        if (IOServiceGetMatchingServices(kIOMasterPortDefault,matchDict,
-                        &iterator) == kIOReturnSuccess)
-        {
-                io_registry_entry_t regEntry;
-          
-                while ((regEntry = IOIteratorNext(iterator))) {
-                        CFMutableDictionaryRef serviceDictionary;
-                        if (IORegistryEntryCreateCFProperties(regEntry,
-                                                              &serviceDictionary,
-                                                               kCFAllocatorDefault,
-                                                               kNilOptions) != kIOReturnSuccess)
-                        {
-                                IOObjectRelease(regEntry);
-                                continue;
-                        }
-                        const void *GPUModel = CFDictionaryGetValue(serviceDictionary, CFSTR("model"));
-                        if (GPUModel != NULL && CFGetTypeID(GPUModel) == CFDataGetTypeID()) {
-                                gpu_name = (char *)CFDataGetBytePtr(GPUModel);
-                                /*for ( ulong i=0; i < strlen(gpu_name); i++)
-                                {
-                                        //Check if this is letter or space. If not, put null termination
-                                        if(gpu_name[i] < 32 || (gpu_name[i] > 32 && gpu_name[i] < 48) || (gpu_name[i] > 57 && gpu_name[i] < 65) || (gpu_name[i] > 90 && gpu_name[i] < 97) || gpu_name[i] > 123 )
-                                        {
-                                                gpu_name[i] = '\0';
-                                        }
-                                }*/
-                                return gpu_name;
-                        }
-                        CFRelease(serviceDictionary);
-                        IOObjectRelease(regEntry);
-                }
-                IOObjectRelease(iterator);
+    io_iterator_t iterator;
+    if (IOServiceGetMatchingServices(
+#ifdef __MAC_OS_X_VERSION_MAX_ALLOWED
+#if __MAC_OS_X_VERSION_MAX_ALLOWED < 120000
+                kIOMasterPortDefault,
+#else
+                kIOMainPortDefault,
+#endif
+#endif
+                matchDict,
+                &iterator) == kIOReturnSuccess)
+    {
+        io_registry_entry_t regEntry;
+        while ((regEntry = IOIteratorNext(iterator))) {
+            CFMutableDictionaryRef serviceDictionary;
+            if (IORegistryEntryCreateCFProperties(regEntry,
+                                                &serviceDictionary,
+                                                kCFAllocatorDefault,
+                                                kNilOptions) != kIOReturnSuccess)
+            {
+                IOObjectRelease(regEntry);
+                continue;
+            }
+            const void *GPUModel = CFDictionaryGetValue(serviceDictionary, CFSTR("model"));
+            if (GPUModel != NULL && CFGetTypeID(GPUModel) == CFDataGetTypeID()) {
+                    gpu_name = (char *)CFDataGetBytePtr(GPUModel);
+                    strlcpy(gpu, gpu_name, 256);
+            }
+            else {
+                strcpy(gpu, "Unknown");
+            }
+            CFRelease(serviceDictionary);
+            IOObjectRelease(regEntry);
         }
-        gpu_name = malloc_s(8);
-        strlcpy(gpu_name, "Unknown");
-        return gpu_name;
+        IOObjectRelease(iterator);
+
+    } 
 }
 #endif

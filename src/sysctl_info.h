@@ -21,21 +21,21 @@
 #define PAGES "vm.pages"
 #define LOGICAL_CPU "hw.logicalcpu"
 #define MODEL "hw.model"
-#define BUFFER32 32 * sizeof(char)
-#define BUFFER64 64 * sizeof(char)
-#define BUFFER256 256 * sizeof(char)
-#define BUFFER512 512 * sizeof(char)
-#define halt_and_catch_fire(fmt, status) \
-        do { \
-                if(status != 0) { \
-                        fprintf(stderr, "paleofetch: " fmt "\n"); \
-                        exit(status); \
-                } \
-        } while(0)
+#define BUFF_32 32
+#define BUFF_64 64
+#define BUFF_256 256
+#define BUFF_512 512
 
+#define halt_and_catch_fire(fmt, status) \
+    if(status != 0) { \
+                fprintf(stderr, "paleofetch: " fmt "\n"); \
+                exit(status); \
+    } 
 struct utsname details;
+
 void *get_sysctl_info(int const, int const),
-     *malloc_s(size_t const);
+     *malloc_s(size_t const),
+     free_s(void *);
 
 char *get_sysctlbyname_info_str(char const *const);  
 #endif // SYSCTL_INFO_H

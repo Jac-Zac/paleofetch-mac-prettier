@@ -8,13 +8,15 @@
 #define MACINTOSH_H
 #include <stdint.h>
 
-char        *get_os_name(char const *const),
-            *get_ram_usage(void),
-            *get_kernel(void),
-            *complete_os(void),
-            *get_resolution(void),
-            *get_gpu(void),
-            *get_battery_procentage(void);
+char        *execute_command(char const *const),
+            *iokit_info(char *);
+
+void        get_ram_usage(char *),
+            get_kernel(char *),
+            get_complete_os(char *),
+            get_resolution(char *),
+            get_gpu(char *),
+            get_battery_procentage(char *);
 
 uint64_t get_mem_from_vm_stat();
 
