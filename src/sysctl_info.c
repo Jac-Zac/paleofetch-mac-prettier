@@ -7,8 +7,6 @@
 
 #include "sysctl_info.h"
 #include <stdlib.h>
-#include <sys/_types/_va_list.h>
-#include <stdarg.h>
 
 char *get_sysctlbyname_info_str(char const *const input)
 {

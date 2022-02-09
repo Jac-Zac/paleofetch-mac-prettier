@@ -8,17 +8,17 @@
 #define MACINTOSH_H
 #include <stdint.h>
 
-char        *execute_command(char const *const),
-            *iokit_info(char *);
+char        *iokit_info(char *);
 
 void        get_ram_usage(char *),
             get_kernel(char *),
             get_complete_os(char *),
             get_resolution(char *),
             get_gpu(char *),
+            execute_command(char const *const, char *const),
             get_battery_procentage(char *);
 
-uint64_t get_mem_from_vm_stat();
+uint64_t    get_mem_from_vm_stat();
 
 #if \
     defined(__ARM_ARCH) || defined(__TARGET_ARCH_ARM) || \

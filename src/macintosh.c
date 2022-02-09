@@ -10,9 +10,6 @@
 
 #include <mach/mach.h>
 #include <mach/vm_page_size.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 
 #include "sysctl_info.h"
 #include "macintosh.h"
@@ -21,36 +18,25 @@
 
 char *const pgmname;
 
-char *execute_command(char const *const cmd)
+void execute_command(char const *const cmd, char *const ref)
 {
-        FILE *stdout_file = popen(cmd, "r");
-        char *os_name = malloc(BUFF_256);
-        if(os_name == NULL){
-            pclose(stdout_file);
-            halt_and_catch_fire("Malloc error", 127);
-        }
-        if (stdout_file)
-        {
-                fgets(os_name, BUFF_256, stdout_file);
-                pclose(stdout_file);
-        }
-        for (uint i = strlen(os_name); i != 0; i--)
-        {
-                if(os_name[i] == '\n')
-                {
-                        os_name[i] = '\0';
-                        break;
-                }      
-        }
-        return os_name;
-
+    FILE *stdout_file = popen(cmd, "r");
+    if (stdout_file)
+    {
+        char c;
+        int i = 0;
+        while((c = fgetc(stdout_file)) != '\n' && i < 254){
+            ref[i] = c;
+            i++;
+        }   
+        ref[i] = '\0';
+        pclose(stdout_file);
+    }
 }
 void get_kernel(char *kernel)
 {
-        //char *const kernel = malloc_s(BUFF_64);
         strlcpy(kernel, "Darwin ", BUFF_64);
         strlcat(kernel, details.release, BUFF_64);
-        //return kernel;
 }
 uint64_t get_mem_from_vm_stat()
 {
@@ -74,19 +60,18 @@ void get_ram_usage(char *ram_usage)
 {
         int64_t *const ram_size =(int64_t *)get_sysctl_info(CTL_HW, HW_MEMSIZE);
         uint const ram_size_short = ram_size[0] >> 20;
+        free(ram_size);
         uint64_t const used_memory = get_mem_from_vm_stat();
-        //char *const ram_usage = malloc_s(BUFF_64);
         snprintf(ram_usage, BUFF_64, "%lluMB/%dMB %c%llu%s",
                 used_memory, ram_size_short, '(', used_memory * 100/(ram_size_short != 0 ? ram_size_short : 1) , "%)");
-        //return ram_usage;
 }
 #else
-char *get_ram_usage()
+char *get_ram_usage(char *ram_usage)
 {
         uint32_t *const ram_size =(uint32_t *)get_sysctl_info(CTL_HW, HW_MEMSIZE);
         uint const ram_size_short = ram_size[0] >> 20;
+        free(ram_size);
         uint32_t const used_memory = get_mem_from_vm_stat();
-        char *const ram_usage = malloc_s(BUFF_64);
         snprintf(ram_usage, BUFF_64, "%lluMB/%dMB %c%llu%s",
                 used_memory, ram_size_short, '(', used_memory * 100/(ram_size_short != 0 ? ram_size_short : 1) , "%)");
         return ram_usage;
@@ -98,23 +83,29 @@ void get_complete_os(char *os)
 {
         char const cmd_build[] = "sw_vers -buildVersion";
         char const cmd_name[]  = "sw_vers -productName";
-        char *build   = execute_command(cmd_build);
-        char *name    = execute_command(cmd_name);
+
+        char build[256];
+        char name[256];   
+        execute_command(cmd_build, build);
+        execute_command(cmd_name, name);
         char *version = get_sysctlbyname_info_str(OS_VERS);
+
         sprintf(os, "%s %s %s %s", name, version, build, details.machine);
-        free(name); free(build); free(version);
-        build = NULL; name = NULL; version = NULL;
+
+        free(version);
+        version = NULL;
 }
 void get_battery_procentage(char *battery_procentage)
 {
     char const cmd[] = "pmset -g batt | grep -Eo '\134d+\045'";
-    char *battery = execute_command(cmd);
+    char battery[256];
+    execute_command(cmd, battery);
     //char *battery = iokit_info("AppleSmartBattery");
-    if(battery == NULL){
+    if(battery[0] == '\0'){
         strcpy(battery_procentage, "Unknown");
         return;
     }
-    strcpy(battery_procentage, battery);
+    strlcpy(battery_procentage, battery, BUFF_256);
 }
 void get_resolution(char *resolution)
 {

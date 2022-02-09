@@ -4,13 +4,10 @@
 //
 //  Created by DesantBucie on 07/04/2021.
 //
-#include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
-#include <sys/_types/_size_t.h>
 #include <sys/sysctl.h>
 
 #include "config.h"
@@ -70,15 +67,10 @@ void get_uptime(char *ret_string)
     uint const hours = (uint)(time / 60) % 24;
     uint const minutes = (uint)time % 60;
 
-    char *days_string = malloc(BUFF_64);
-    char *hours_string = malloc(BUFF_64);
-    char *minutes_string = malloc(BUFF_64);
-    if(!days_string || !hours_string || !minutes_string){
-        free_s(days_string);
-        free_s(hours_string);
-        free_s(minutes_string);
-        halt_and_catch_fire("Malloc error", 127);
-    }
+    char days_string[BUFF_64];
+    char hours_string[BUFF_64];
+    char minutes_string[BUFF_64];
+
     if(days > 0)
         snprintf(days_string, BUFF_64, "%u %s", days, (days > 1 ? "days " : "day "));
     if(hours > 0)
@@ -86,9 +78,6 @@ void get_uptime(char *ret_string)
 
     snprintf(minutes_string, BUFF_64, "%u %s", minutes, (minutes == 0 || minutes > 1 ? "minutes" : "minute"));
     snprintf(ret_string, BUFF_64 , "%s%s%s", days_string, hours_string, minutes_string);
-    
-    free(days_string); free(hours_string); free(minutes_string);
-    days_string = NULL; hours_string = NULL; minutes_string = NULL;
     
 }
 void get_shell(char *shell)
@@ -111,13 +100,11 @@ void hostname_underline(char *ret_string)
         // Composing <username>@<hostname> second time,
         // to properly calculate string lenght without ESC chars
     
-        char *userhost           = malloc_s(BUFF_256);
+        char userhost[BUFF_256];
         size_t const string_size = BUFF_256;
 
         snprintf(userhost, string_size, "%s%c%s", getenv("USER"), '@', details.nodename);
-        size_t const underline = strlen(userhost) * sizeof(char); // \0 already included
-        free(userhost);
-        userhost = NULL;
+        size_t const underline = strlen(userhost);
 
         char *s = ret_string;
         for(size_t i = 0; i < underline; i++)
@@ -199,18 +186,14 @@ char **get_cached_value(char **file_ret){
     *file_ret = malloc_s(BUFF_512);
     fgets(*file_ret, BUFF_512, cache_file);
     fclose(cache_file);
-    char *token;
     char **const list = malloc(COUNT(config)+1 * sizeof(char*));
     if(!list){
         free(*file_ret);
         halt_and_catch_fire("Malloc error", 127);
     }
     char **list_ptr = list;
-    token = strtok(*file_ret, "|");
-    while(token != NULL){
-        *list_ptr = token;
-        token = strtok(NULL,"|");
-        list_ptr++;
+    while ((*list_ptr = strsep(file_ret, "|")) != NULL) {
+        list_ptr++; // strsep manual example 1:1
     }
     return list; 
 }
