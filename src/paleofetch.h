@@ -24,8 +24,6 @@ char            **get_cached_value(char **);
 
 int             check_cache_file(_Bool);
 
-typedef unsigned long ulong;
-
 #define COUNT(x) (uint)(sizeof x / sizeof *x)
 #define SPACER {"", spacer, false},
 //#define REMOVE(A) { (A), NULL, sizeof(A) - 1 , 0 }

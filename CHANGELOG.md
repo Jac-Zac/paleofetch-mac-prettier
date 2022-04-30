@@ -1,3 +1,7 @@
+### v0.5b - 2022-04-30
+* Added usage prompt
+* Removed some unnecessary stuff (typedef ulong etc)
+
 ### v0.5a - 2022-01-20
 * Removed many unnecessary allocations, instead copying function results to one String located in main
 * Some work is being done to support IOKit calls more easily, but M1 seems different than Intel mac version(some headers are missing).

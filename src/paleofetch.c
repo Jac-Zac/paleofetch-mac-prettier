@@ -186,7 +186,7 @@ char **get_cached_value(char **file_ret){
     *file_ret = malloc_s(BUFF_512);
     fgets(*file_ret, BUFF_512, cache_file);
     fclose(cache_file);
-    char **const list = malloc(COUNT(config)+1 * sizeof(char*));
+    char **const list = malloc((COUNT(config) + 2) * sizeof(char*));
     if(!list){
         free(*file_ret);
         halt_and_catch_fire("Malloc error", 127);
@@ -226,13 +226,17 @@ int main(int argc, char **argv)
     //sets which size we should base our iteration on, logo size or info size.
     uint const which_bigger = logo_size > config_size ? logo_size : config_size;
 
-    if(argv[1] != NULL) {
+    if(argc == 1) {
         check_cache_file(true);
     }    
     else{ 
-        check_cache_file(false);
+        if(!strcmp(argv[1], "-r"))
+            check_cache_file(false);
+        else {
+            printf("Usage: paleofetch [-r (recache)]\n");
+            return 0;
+        }
     }
-
     char *file_ret; // This is done, so we can free memory that we use for cache;
     char **cached_list = get_cached_value(&file_ret);
     String test;

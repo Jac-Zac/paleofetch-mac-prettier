@@ -18,7 +18,7 @@
 
 char *const pgmname;
 
-void execute_command(char const *const cmd, char *const ref)
+static void execute_command(char const *const cmd, char *const ref)
 {
     FILE *stdout_file = popen(cmd, "r");
     if (stdout_file)
@@ -58,7 +58,7 @@ uint64_t get_mem_from_vm_stat()
 #if defined(_is_arm_) || defined(_is_x86_64_)
 void get_ram_usage(char *ram_usage)
 {
-        int64_t *const ram_size =(int64_t *)get_sysctl_info(CTL_HW, HW_MEMSIZE);
+        int64_t *const ram_size = (int64_t *) get_sysctl_info(CTL_HW, HW_MEMSIZE);
         uint const ram_size_short = ram_size[0] >> 20;
         free(ram_size);
         uint64_t const used_memory = get_mem_from_vm_stat();
@@ -97,10 +97,9 @@ void get_complete_os(char *os)
 }
 void get_battery_procentage(char *battery_procentage)
 {
-    char const cmd[] = "pmset -g batt | grep -Eo '\134d+\045'";
+    char const cmd[] = "pmset -g batt | grep -Eo \'\134d+\045\'";
     char battery[256];
     execute_command(cmd, battery);
-    //char *battery = iokit_info("AppleSmartBattery");
     if(battery[0] == '\0'){
         strcpy(battery_procentage, "Unknown");
         return;

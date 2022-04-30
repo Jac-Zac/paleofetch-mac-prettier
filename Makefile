@@ -28,7 +28,7 @@ dump:
 	@$(CC) $(SRC) -S
 
 %.o: src/%.c
-	${CC} ${CFLAGS} ${DEFINES} -c $<
+	$(CC) $(CFLAGS) $(OPT) -c $<
 
 sysctl_info.o: src/sysctl_info.c src/sysctl_info.h
 paleofetch.o: src/paleofetch.c src/paleofetch.h src/config.h
