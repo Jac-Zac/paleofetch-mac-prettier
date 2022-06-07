@@ -165,9 +165,10 @@ int check_cache_file(_Bool const recache)
 {
     FILE *cache_file;
     String test;
-    if(fopen(cache_file_path(), "r") == NULL || recache == true)
+    void *path = cache_file_path();
+    if(fopen(path, "r") == NULL || recache == true)
     {   
-        cache_file = fopen(cache_file_path(), "w"); 
+        cache_file = fopen(path, "w"); 
         if(cache_file == NULL)
             return 1;
         for(uint i = 0; i < COUNT(config); i++){
@@ -176,23 +177,27 @@ int check_cache_file(_Bool const recache)
         }
         fclose(cache_file);
     }
+    free(path);
     return 0;
 }
 char **get_cached_value(char **file_ret){
-    FILE *const cache_file = fopen(cache_file_path(), "r");
+    void *path = cache_file_path();
+    FILE *const cache_file = fopen(path, "r");
+    free(path);
     if(cache_file == NULL){
         return NULL;
     }
     *file_ret = malloc_s(BUFF_512);
     fgets(*file_ret, BUFF_512, cache_file);
     fclose(cache_file);
-    char **const list = malloc((COUNT(config) + 2) * sizeof(char*));
+    char **const list = malloc((COUNT(config)) * sizeof(char*));
     if(!list){
-        free(*file_ret);
+        free(file_ret);
         halt_and_catch_fire("Malloc error", 127);
     }
     char **list_ptr = list;
-    while ((*list_ptr = strsep(file_ret, "|")) != NULL) {
+    char *file_ret_cpy = *file_ret; 
+    while ((*list_ptr = strsep(&file_ret_cpy, "|")) != NULL) {
         list_ptr++; // strsep manual example 1:1
     }
     return list; 
@@ -200,6 +205,7 @@ char **get_cached_value(char **file_ret){
 void get_cpu(char *cpu){
     char *cpu_name = get_sysctlbyname_info_str(CPU);
     strlcpy(cpu, cpu_name, 256);
+    free(cpu_name);
 }
 void get_terminal(char *terminal){
     if(getenv("TERM_PROGRAM") == NULL){
@@ -227,29 +233,29 @@ int main(int argc, char **argv)
     uint const which_bigger = logo_size > config_size ? logo_size : config_size;
 
     if(argc == 1) {
-        check_cache_file(true);
+        check_cache_file(false);
     }    
     else{ 
         if(!strcmp(argv[1], "-r"))
-            check_cache_file(false);
+            check_cache_file(true);
         else {
             printf("Usage: paleofetch [-r (recache)]\n");
             return 0;
         }
     }
-    char *file_ret; // This is done, so we can free memory that we use for cache;
-    char **cached_list = get_cached_value(&file_ret);
+    char **file_ret = malloc(sizeof(char *));
+    char **cached_list = get_cached_value(file_ret);
     String test;
 
     for(uint i = 0; i < which_bigger; i++)
     {
         // if i > count, we will print only logo, as we already are iterating on it's size.
-        if(i >= COUNT(config)) {
+        if(i >= config_size) {
             printf("%s\033[0m", logo[i]);
         }
         // If we run out of logo, but we have still info to print, we will have to 
         // print spaces corresponding to logos width, and then print our info.
-        else if( i >= COUNT(logo) && i <= COUNT(config)) {
+        else if( i >= logo_size && i <= config_size) {
             for(int j = 0; j < logo_line_lenght; j++){
                 printf("%c",' ');
             }
@@ -277,8 +283,9 @@ int main(int argc, char **argv)
 
         puts("");
     }
-    free(file_ret);
     free(cached_list);
+    free(*file_ret);
+    free(file_ret);
     return ret;
 }
 

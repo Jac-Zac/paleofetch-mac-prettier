@@ -59,7 +59,7 @@ uint64_t get_mem_from_vm_stat()
 void get_ram_usage(char *ram_usage)
 {
         int64_t *const ram_size = (int64_t *) get_sysctl_info(CTL_HW, HW_MEMSIZE);
-        uint const ram_size_short = ram_size[0] >> 20;
+        uint const ram_size_short = *ram_size >> 20;
         free(ram_size);
         uint64_t const used_memory = get_mem_from_vm_stat();
         snprintf(ram_usage, BUFF_64, "%lluMB/%dMB %c%llu%s",

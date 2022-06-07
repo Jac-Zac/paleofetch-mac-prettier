@@ -1,3 +1,6 @@
+### v0.5c - 2022-06-07
+* Fixed 5 memory leaks(mostly functions that returned pointers, not being assigned and freed)
+
 ### v0.5b - 2022-04-30
 * Added usage prompt
 * Removed some unnecessary stuff (typedef ulong etc)

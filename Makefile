@@ -6,7 +6,7 @@ TARGET=/usr/local/bin/
 MAC_OBJ=macintosh.o
 FRAMEWORKS=-framework Cocoa -framework IOKit
 
-paleofetch: $(OBJ)
+paleofetch: clean $(OBJ)
 	@if [ "$$(uname -s)" == "Darwin" ]; then \
 		$(CC) ${CFLAGS} $(OPT) -c src/macintosh.c; \
 		$(CC) $(OBJ) $(MAC_OBJ) $(FRAMEWORKS) -o $@; \

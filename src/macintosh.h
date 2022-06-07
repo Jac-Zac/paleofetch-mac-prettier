@@ -10,8 +10,6 @@
 
 char        *iokit_info(char *);
 
-static void execute_command(char const *const, char *const);
-
 void        get_ram_usage(char *),
             get_kernel(char *),
             get_complete_os(char *),

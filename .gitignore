@@ -1,6 +1,7 @@
+.idea/
 paleofetch
 **/a.out
-a.out
+a.out*
 **/.DS_Store
 .DS_Store
 *.o
