@@ -38,7 +38,6 @@ void get_colors1(char *colors1) {
         s += 8;
     }
     strlcat(s, "\033[0m", 5);
-
 }
 
 void get_colors2(char *colors2) {
@@ -187,8 +186,11 @@ char **get_cached_value(char **file_ret){
     if(cache_file == NULL){
         return NULL;
     }
-    *file_ret = malloc_s(BUFF_512);
-    fgets(*file_ret, BUFF_512, cache_file);
+    fseek(cache_file, 0L, SEEK_END);
+    uint file_length = ftell(cache_file);
+    fseek(cache_file, 0L, SEEK_SET);
+    *file_ret = malloc_s(file_length);
+    fgets(*file_ret, file_length, cache_file);
     fclose(cache_file);
     char **const list = malloc((COUNT(config)) * sizeof(char*));
     if(!list){

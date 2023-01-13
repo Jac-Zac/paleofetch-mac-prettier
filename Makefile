@@ -1,6 +1,6 @@
 OBJ=paleofetch.o sysctl_info.o
 CFLAGS=-Wall -Wextra -Wpedantic
-CC=cc
+CC=clang
 OPT=-O3
 TARGET=/usr/local/bin/
 MAC_OBJ=macintosh.o
