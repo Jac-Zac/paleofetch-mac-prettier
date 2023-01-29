@@ -10,6 +10,7 @@
 
 void            get_colors1(char *),
                 get_colors2(char *),
+                get_colors_dots(void),
                 print_hardware(void),
                 print_software(void),
                 print_end_info(void),

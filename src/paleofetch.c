@@ -41,6 +41,17 @@ void print_end_info(void){
     printf("└──────────────────────────────────────────┘");
 }
 
+void get_colors_dots(void) {
+
+    // Start spacing
+    printf("%*c", 8, ' ');
+
+        for (int i = 0; i < 8; i++) {
+        printf("\033[3%dm   ", i);
+    }
+    printf("\033[0m");
+}
+
 void get_colors1(char *colors1) {
 
     char *s = colors1;
