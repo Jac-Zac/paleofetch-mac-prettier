@@ -18,7 +18,6 @@
 	{ " \033[33m\033[0m    ",     get_uptime,               false }, \
 	SPACER \
 	{ "",             print_end_info,              false  }, \
-	SPACER \
 	{ "",             get_colors_dots,              false  }, \
 	/* { "",             get_colors1,              true  }, \ */\
 	/* { "",             get_colors2,              true  }, \ */\
