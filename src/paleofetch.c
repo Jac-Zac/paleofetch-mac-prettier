@@ -20,7 +20,7 @@
 #endif
 
 struct conf {
-    char *label;    
+    char *label;
     void (*function)();
     bool cached;
 } config[] = CONFIG;
@@ -28,6 +28,18 @@ struct conf {
 typedef struct {
     char str[256];
 } String;
+
+void print_hardware(void) {
+    printf("┌─────────  \033[1;32mHardware Information\033[0m  ─────────┐");
+}
+
+void print_software(void) {
+    printf("├─────────  \033[1;34mSoftware Information\033[0m  ─────────┤");
+}
+
+void print_end_info(void){
+    printf("└──────────────────────────────────────────┘");
+}
 
 void get_colors1(char *colors1) {
 
@@ -66,9 +78,9 @@ void get_uptime(char *ret_string)
     uint const hours = (uint)(time / 60) % 24;
     uint const minutes = (uint)time % 60;
 
-    char days_string[BUFF_64];
-    char hours_string[BUFF_64];
-    char minutes_string[BUFF_64];
+    char days_string[BUFF_64] = {0};
+    char hours_string[BUFF_64] = {0};
+    char minutes_string[BUFF_64] = {0};
 
     if(days > 0)
         snprintf(days_string, BUFF_64, "%u %s", days, (days > 1 ? "days " : "day "));
@@ -77,7 +89,7 @@ void get_uptime(char *ret_string)
 
     snprintf(minutes_string, BUFF_64, "%u %s", minutes, (minutes == 0 || minutes > 1 ? "minutes" : "minute"));
     snprintf(ret_string, BUFF_64 , "%s%s%s", days_string, hours_string, minutes_string);
-    
+
 }
 void get_shell(char *shell)
 {
@@ -90,7 +102,7 @@ void get_shell(char *shell)
             return;
         }
         //After last '/' there will be name of the shell
-        s = strrchr(s,'/'); 
+        s = strrchr(s,'/');
         s++;
         strlcpy(shell,s, 8);
 }
@@ -98,7 +110,7 @@ void hostname_underline(char *ret_string)
 {
         // Composing <username>@<hostname> second time,
         // to properly calculate string lenght without ESC chars
-    
+
         char userhost[BUFF_256];
         size_t const string_size = BUFF_256;
 
@@ -166,8 +178,8 @@ int check_cache_file(_Bool const recache)
     String test;
     void *path = cache_file_path();
     if(fopen(path, "r") == NULL || recache == true)
-    {   
-        cache_file = fopen(path, "w"); 
+    {
+        cache_file = fopen(path, "w");
         if(cache_file == NULL)
             return 1;
         for(uint i = 0; i < COUNT(config); i++){
@@ -198,11 +210,11 @@ char **get_cached_value(char **file_ret){
         halt_and_catch_fire("Malloc error", 127);
     }
     char **list_ptr = list;
-    char *file_ret_cpy = *file_ret; 
+    char *file_ret_cpy = *file_ret;
     while ((*list_ptr = strsep(&file_ret_cpy, "|")) != NULL) {
         list_ptr++; // strsep manual example 1:1
     }
-    return list; 
+    return list;
 }
 void get_cpu(char *cpu){
     char *cpu_name = get_sysctlbyname_info_str(CPU);
@@ -212,7 +224,7 @@ void get_cpu(char *cpu){
 void get_terminal(char *terminal){
     if(getenv("TERM_PROGRAM") == NULL){
         strcpy(terminal, "Unknown");
-        return; 
+        return;
     }
     strlcpy(terminal, getenv("TERM_PROGRAM"), BUFF_256);
 }
@@ -225,8 +237,8 @@ void get_machine(char *machine){
     free(model);
 }
 int main(int argc, char **argv)
-{       
-    
+{
+
     int const ret = uname(&details);
 
     uint const logo_size = COUNT(logo);
@@ -236,8 +248,8 @@ int main(int argc, char **argv)
 
     if(argc == 1) {
         check_cache_file(false);
-    }    
-    else{ 
+    }
+    else{
         if(!strcmp(argv[1], "-r"))
             check_cache_file(true);
         else {
@@ -255,7 +267,7 @@ int main(int argc, char **argv)
         if(i >= config_size) {
             printf("%s\033[0m", logo[i]);
         }
-        // If we run out of logo, but we have still info to print, we will have to 
+        // If we run out of logo, but we have still info to print, we will have to
         // print spaces corresponding to logos width, and then print our info.
         else if( i >= logo_size && i <= config_size) {
             for(int j = 0; j < logo_line_lenght; j++){
@@ -271,7 +283,7 @@ int main(int argc, char **argv)
             }
         }
         // The only option left is that we have both info and logo to print.
-        else { 
+        else {
             printf("%s\033[0m ", logo[i]);
             printf("\033[1m%s\033[0m",config[i].label);
             if(config[i].cached == true && cached_list[i] != NULL){

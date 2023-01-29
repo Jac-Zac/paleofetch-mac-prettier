@@ -1,5 +1,5 @@
 //
-//  paleofetch.h 
+//  paleofetch.h
 //  paleofetch-mac
 //
 //  Created by DesantBucie on 07/04/2021.
@@ -10,6 +10,9 @@
 
 void            get_colors1(char *),
                 get_colors2(char *),
+                print_hardware(void),
+                print_software(void),
+                print_end_info(void),
                 get_uptime(char *),
                 get_shell(char *),
                 get_cpu(char *),
@@ -48,3 +51,4 @@ int             check_cache_file(_Bool);
 }*/
 
 #endif //PALEOFETCH_H
+

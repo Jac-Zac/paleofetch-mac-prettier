@@ -1,21 +1,32 @@
 #define CONFIG \
 { \
     /* name            function                 cached  */\
-    { "",             get_user_and_host,        true  }, \
-    { "",             hostname_underline,       true  }, \
-	{ "Shell: ",      get_shell,                true  }, \
-	{ "OS: ",		  get_complete_os,          true  }, \
-	{ "Kernel: ",     get_kernel,               true  }, \
-    { "Machine: ",    get_machine,              true  }, \
-	{ "Uptime: ",     get_uptime,               false }, \
-	{ "Resolution: ", get_resolution,           true  }, \
-	{ "Terminal: ",   get_terminal,             false }, \
-    { "Battery: ",    get_battery_procentage,   false }, \
-	{ "RAM: ", 		  get_ram_usage,		    false }, \
-	{ "CPU: ",        get_cpu,                  true  }, \
-	{ "GPU: ",        get_gpu,                  true  }, \
+	{ "",             print_hardware,              false  }, \
+	SPACER \
+    { " \033[33m\033[0m    ",    get_machine,              true  }, \
+	{ " \033[33m\033[0m    ",        get_cpu,                  true  }, \
+	{ " \033[33m﬙\033[0m    ",        get_gpu,                  true  }, \
+	{ " \033[33m塞\033[0m   ", 		  get_ram_usage,		    false }, \
+    { " \033[33m\033[0m    ",    get_battery_procentage,   false }, \
+	SPACER \
+	{ "",             print_software,              false  }, \
+	SPACER \
+	{ " \033[33m\033[0m    ",		  get_complete_os,          true  }, \
+	{ " \033[33m\033[0m    ",   get_terminal,             false }, \
+	{ " \033[33m\033[0m    ",      get_shell,                true  }, \
+	{ " \033[33m\033[0m    ",     get_uptime,               false }, \
+	SPACER \
+	{ "",             print_end_info,              false  }, \
 	SPACER \
 	{ "",             get_colors1,              true  }, \
 	{ "",             get_colors2,              true  }, \
+	SPACER \
 }
+
+	/* { "\033[33m\033[0m    ",     get_kernel,               true  }, */\
+    /*
+    { "",             get_user_and_host,        true  },\
+    { "",             hostname_underline,       true  }, \
+    */\
+	/* { "Resolution: ", get_resolution,           true  }, */\
 
