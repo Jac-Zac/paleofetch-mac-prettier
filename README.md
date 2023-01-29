@@ -20,7 +20,7 @@ At least for now paleofetch execution time is around 0.05s while neofetch will e
 
 The plan is to support all BSDs(FreeBSD, NetBSD, OpenBSD, maybe Dragonfly), but for now only macOS.
 
-![example output](.assets/example.png)
+![example output](.gitlab/example.png)
 
 ## Dependencies
 
