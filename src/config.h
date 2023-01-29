@@ -12,6 +12,7 @@
 	{ "",             print_software,              false  }, \
 	SPACER \
 	{ " \033[33m\033[0m    ",		  get_complete_os,          true  }, \
+	{ " \033[33m\033[0m    ",     get_kernel,               true  }, \
 	{ " \033[33m\033[0m    ",   get_terminal,             false }, \
 	{ " \033[33m\033[0m    ",      get_shell,                true  }, \
 	{ " \033[33m\033[0m    ",     get_uptime,               false }, \
@@ -23,7 +24,6 @@
 	SPACER \
 }
 
-	/* { "\033[33m\033[0m    ",     get_kernel,               true  }, */\
     /*
     { "",             get_user_and_host,        true  },\
     { "",             hostname_underline,       true  }, \
