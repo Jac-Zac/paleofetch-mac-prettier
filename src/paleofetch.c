@@ -44,7 +44,7 @@ void print_end_info(void){
 void get_colors_dots(void) {
 
     // Start spacing
-    printf("%*c", 43, ' ');
+    printf("%*c", 42, ' ');
 
         for (int i = 7; i >= 0; i--) {
         printf("\033[3%dm   ", i);
