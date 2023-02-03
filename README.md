@@ -15,6 +15,10 @@ Not much code was left, but the logic is similar._
 ## Installation instructions :wrench:
 > It is mainly intended for mac you only need to have make installed pretty much
 
+#### Requirements
+
+- Install one of the [`Nerd Fonts`](https://github.com/ryanoasis/nerd-fonts) if you haven't already
+
 ##### Step by step instruction
 
 1.  Cloning and moving into the directory
