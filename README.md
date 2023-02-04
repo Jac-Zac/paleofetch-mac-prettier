@@ -35,6 +35,13 @@ git clone https://github.com/Jac-Zac/paleofetch-mac-prettier.git && cd paleofetc
 make install
 ```
 
+3. Run it for the first time to create the cache
+```bash
+paleofetch
+```
+
+_Now you should be able to use it without problems_
+
 #### Recaching
 
 Paleofetch uses caching to run faster. To recache data run `paleofetch -r`

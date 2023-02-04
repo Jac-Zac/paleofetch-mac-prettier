@@ -1,5 +1,5 @@
 //
-//  macintosh.h 
+//  macintosh.h
 //  paleofetch-mac
 //
 //  Created by DesantBucie on 16/09/2021.
@@ -15,7 +15,8 @@ void        get_ram_usage(char *),
             get_complete_os(char *),
             get_resolution(char *),
             get_gpu(char *),
-            get_battery_procentage(char *);
+            get_battery_procentage(char *),
+            get_ip(char *local_ip);
 
 uint64_t    get_mem_from_vm_stat();
 
@@ -34,7 +35,7 @@ uint64_t    get_mem_from_vm_stat();
 #elif \
     defined(__x86_64) || defined(__x86_64__) || \
     defined(__amd64__) || defined(__amd64) || \
-    defined(_M_X64) 
+    defined(_M_X64)
 #define _is_x86_64_
 #elif \
     defined(i386) || defined(__i386__) \
@@ -44,8 +45,9 @@ uint64_t    get_mem_from_vm_stat();
     defined(__THW_INTEL__) || defined(__I86__) \
     defined(__INTEL__)
 #define _is_x86
-#else 
+#else
 #define _is_ppc_
-#endif  
+#endif
 
 #endif //MACINTOSH_H
+

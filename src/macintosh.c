@@ -28,7 +28,7 @@ static void execute_command(char const *const cmd, char *const ref)
         while((c = fgetc(stdout_file)) != '\n' && i < 254){
             ref[i] = c;
             i++;
-        }   
+        }
         ref[i] = '\0';
         pclose(stdout_file);
     }
@@ -85,7 +85,7 @@ void get_complete_os(char *os)
         char const cmd_name[]  = "sw_vers -productName";
 
         char build[256];
-        char name[256];   
+        char name[256];
         execute_command(cmd_build, build);
         execute_command(cmd_name, name);
         char *version = get_sysctlbyname_info_str(OS_VERS);
@@ -126,7 +126,7 @@ void get_gpu(char *gpu)
 {
     char *gpu_name;
     CFMutableDictionaryRef matchDict = IOServiceMatching("IOPCIDevice");
-        
+
     io_iterator_t iterator;
     if (IOServiceGetMatchingServices(
 #ifdef __MAC_OS_X_VERSION_MAX_ALLOWED
@@ -163,6 +163,16 @@ void get_gpu(char *gpu)
         }
         IOObjectRelease(iterator);
 
-    } 
+    }
 }
 #endif
+
+void get_ip(char *local_ip)
+{
+    const char cmd[] = "ifconfig en0 | grep inet | awk '$1==\"inet\" {print $2}'";
+    char ip[256];
+    execute_command(cmd, ip);
+
+    strlcpy(local_ip, ip, BUFF_256);
+}
+

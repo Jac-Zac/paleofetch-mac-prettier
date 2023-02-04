@@ -73,6 +73,7 @@ void get_colors2(char *colors2) {
     }
     strlcat(s,"\033[0m", 5);
 }
+
 void get_uptime(char *ret_string)
 {
     struct timeval boottime;
