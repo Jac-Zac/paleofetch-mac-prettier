@@ -24,7 +24,7 @@ install: paleofetch
 clean:
 	@echo "Cleaning..."
 	@rm -f paleofetch a.out *.o
-	@rm -r $(CACHE)
+	@if [ -d $(CACHE) ]; then rm -Rf $(CACHE); fi
 dump:
 	@echo "Dumping..."
 	@$(CC) $(SRC) -S
