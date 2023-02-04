@@ -19,6 +19,11 @@ Not much code was left, but the logic is similar._
 
 - Install one of the [`Nerd Fonts`](https://github.com/ryanoasis/nerd-fonts) if you haven't already
 
+- To install the same font i use:
+
+    ```brew install font-inconsolata-lgc-nerd-font```
+    > Then set that as your terminal font
+
 ##### Step by step instruction
 
 1.  Cloning and moving into the directory
