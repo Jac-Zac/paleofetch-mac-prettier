@@ -5,6 +5,7 @@ OPT=-O3
 TARGET=/usr/local/bin/
 MAC_OBJ=macintosh.o
 FRAMEWORKS=-framework Cocoa -framework IOKit
+CACHE=~/.cache/paleofetch
 
 paleofetch: clean $(OBJ)
 	@if [ "$$(uname -s)" == "Darwin" ]; then \
@@ -23,6 +24,7 @@ install: paleofetch
 clean:
 	@echo "Cleaning..."
 	@rm -f paleofetch a.out *.o
+	@rm -r $(CACHE)
 dump:
 	@echo "Dumping..."
 	@$(CC) $(SRC) -S
