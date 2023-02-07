@@ -235,7 +235,11 @@ void get_cpu(char *cpu){
 }
 void get_terminal(char *terminal){
     if(getenv("TERM_PROGRAM") == NULL){
-        strcpy(terminal, "Unknown");
+        if (getenv("TERM") == NULL){
+            strcpy(terminal, "Unknown");
+            return;
+        }
+        strcpy(terminal, getenv("TERM"));
         return;
     }
     strlcpy(terminal, getenv("TERM_PROGRAM"), BUFF_256);

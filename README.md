@@ -46,6 +46,11 @@ _Now you should be able to use it without problems_
 
 Paleofetch uses caching to run faster. To recache data run `paleofetch -r`
 
+#### If your terminal is not showing up correctly
+
+You can set your `TERM_PROGRAM` variable in your environment variables.
+> For example you can fix kitty by adding ```export TERM_PROGRAM="kitty"```
+
 ----
 
 #### IMPORTANT
