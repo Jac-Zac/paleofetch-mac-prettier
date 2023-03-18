@@ -29,27 +29,30 @@ typedef struct {
     char str[256];
 } String;
 
-void print_hardware(void) {
-    printf("┌─────────  \033[1;32mHardware Information\033[0m  ─────────┐");
+void print_hardware(char *hardware) {
+    strcpy(hardware, "┌─────────  \033[1;32mHardware Information\033[0m  ─────────┐");
 }
 
-void print_software(void) {
-    printf("├─────────  \033[1;34mSoftware Information\033[0m  ─────────┤");
+void print_software(char *software) {
+    strcpy(software, "├─────────  \033[1;34mSoftware Information\033[0m  ─────────┤");
 }
 
-void print_end_info(void){
-    printf("└──────────────────────────────────────────┘");
+void print_end_info(char *end_info){
+    strcpy(end_info, "└──────────────────────────────────────────┘");
 }
 
-void get_colors_dots(void) {
+void get_colors_dots(char *dots) {
 
     // Start spacing
-    printf("%*c", 42, ' ');
+    char *s = dots;
+    sprintf(s, "%*c", 7, ' ');
+    s+=7;
 
-        for (int i = 7; i >= 0; i--) {
-        printf("\033[3%dm   ", i);
+    for (int i = 7; i >= 0; i--) {
+        sprintf(s, "\033[3%dm   ", i);
+        s+=11;
     }
-    printf("\033[0m");
+    //printf("\033[0m");
 }
 
 void get_colors1(char *colors1) {
@@ -239,7 +242,8 @@ void get_terminal(char *terminal){
             strcpy(terminal, "Unknown");
             return;
         }
-        strcpy(terminal, getenv("TERM"));
+        // better to use strl here, imo. Custom variable might be bigger than 256.
+        strlcpy(terminal, getenv("TERM"), BUFF_256);
         return;
     }
     strlcpy(terminal, getenv("TERM_PROGRAM"), BUFF_256);
