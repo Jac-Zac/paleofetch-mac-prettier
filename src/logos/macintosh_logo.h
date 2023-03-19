@@ -1,6 +1,6 @@
 #ifndef MACINTOSH_LOGO_H
 #define MACINTOSH_LOGO_H
-const int logo_line_lenght = 32;
+const int logo_line_lenght = 36;
 const char *logo[] =
 {
 " \033[32;1m                    'c.           ",
@@ -20,7 +20,6 @@ const char *logo[] =
 " \033[34;1m    kMMMMMMMMMMMMMMMMMMMMMMd      ",
 " \033[34;1m     ;KMMMMMMMWXXWMMMMMMMk.       ",
 " \033[34;1m       .cooc,.    .,coo:.         ",
-""
 };
 
 #endif
